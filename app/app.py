@@ -1,4 +1,5 @@
 import os
+import time
 
 import gradio as gr
 import numpy as np
@@ -45,12 +46,12 @@ description_p = """ # Instructions for point mode
 
 examples = [
     ["assets/picture0.jpg"],
-    ["assets/picture3.jpg"],
-    ["assets/picture4.jpg"],
-    ["assets/picture5.jpg"],
-    ["assets/picture6.jpg"],
-    ["assets/picture1.jpg"],
-    ["assets/picture2.jpg"],
+    # ["assets/picture3.jpg"],
+    # ["assets/picture4.jpg"],
+    # ["assets/picture5.jpg"],
+    # ["assets/picture6.jpg"],
+    # ["assets/picture1.jpg"],
+    # ["assets/picture2.jpg"],
 ]
 
 default_example = examples[0]
@@ -62,18 +63,24 @@ css = "h1 { text-align: center } .about { text-align: justify; padding-left: 10%
 def segment_everything(
     image,
     input_size=1024,
+    points_per_side=5,
+    stability_score_thresh=0.1,
     better_quality=False,
     withContours=True,
     use_retina=True,
     mask_random_color=True,
 ):
+    print("points_per_side",points_per_side)
+    print("stability_score_thresh",stability_score_thresh)
+    print("input_size",input_size)
+    startTime = time.time()
     # global mask_generator
-    global sam
+    global mobile_sam
     mask_generator = SamAutomaticMaskGenerator(
-        model=sam,
-        points_per_side=7,
+        model=mobile_sam,
+        points_per_side=points_per_side,
         # pred_iou_thresh=0.86,
-        stability_score_thresh=0.1,
+        stability_score_thresh=stability_score_thresh,
         # crop_n_layers=1,
         # crop_n_points_downscale_factor=2,
         # min_mask_region_area=100,  # Requires open-cv to run post-processing
@@ -100,6 +107,9 @@ def segment_everything(
         use_retina=use_retina,
         withContours=withContours,
     )
+    
+    print("------ total time: (s): %s" % round(time.time() - startTime, 2))
+
     return fig
 
 
@@ -210,6 +220,23 @@ input_size_slider = gr.components.Slider(
     info="Our model was trained on a size of 1024",
 )
 
+points_per_side_slider = gr.components.Slider(
+    minimum=1,
+    maximum=32,
+    value=5,
+    step=1,
+    label="points_per_side",
+    info="points_per_side",
+)
+stability_score_thresh_slider = gr.components.Slider(
+    minimum=0.01,
+    maximum=1,
+    value=0.1,
+    step=0.01,
+    label="stability_score_thresh",
+    info="stability_score_thresh",
+)
+
 with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
     with gr.Row():
         with gr.Column(scale=1):
@@ -229,7 +256,8 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
         with gr.Row():
             with gr.Column():
                 input_size_slider.render()
-    
+                points_per_side_slider.render()
+                stability_score_thresh_slider.render()
                 with gr.Row():
                     contour_check = gr.Checkbox(
                         value=True,
@@ -249,7 +277,7 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
                     inputs=[cond_img_e],
                     outputs=segm_img_e,
                     fn=segment_everything,
-                    cache_examples=True,
+                    cache_examples=False,
                     examples_per_page=4,
                 )
     
@@ -316,6 +344,8 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
         inputs=[
             cond_img_e,
             input_size_slider,
+            points_per_side_slider,
+            stability_score_thresh_slider,
             mor_check,
             contour_check,
             retina_check,
