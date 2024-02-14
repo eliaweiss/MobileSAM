@@ -123,6 +123,7 @@ def segment_with_points(
 ):
     global global_points
     global global_point_label
+    startTime = time.time()
 
     input_size = int(input_size)
     w, h = image.size
@@ -130,6 +131,8 @@ def segment_with_points(
     new_w = int(w * scale)
     new_h = int(h * scale)
     image = image.resize((new_w, new_h))
+    
+    print("global_points",global_points)
 
     scaled_points = np.array(
         [[int(x * scale) for x in point] for point in global_points]
@@ -169,6 +172,7 @@ def segment_with_points(
         use_retina=use_retina,
         withContours=withContours,
     )
+    print("------ total time: (s): %s" % round(time.time() - startTime, 2))
 
     global_points = []
     global_point_label = []
