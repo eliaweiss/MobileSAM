@@ -44,6 +44,7 @@ description_p = """ # Instructions for point mode
               """
 
 examples = [
+    ["assets/picture0.jpg"],
     ["assets/picture3.jpg"],
     ["assets/picture4.jpg"],
     ["assets/picture5.jpg"],
@@ -66,7 +67,17 @@ def segment_everything(
     use_retina=True,
     mask_random_color=True,
 ):
-    global mask_generator
+    # global mask_generator
+    global sam
+    mask_generator = SamAutomaticMaskGenerator(
+        model=sam,
+        points_per_side=7,
+        # pred_iou_thresh=0.86,
+        stability_score_thresh=0.1,
+        # crop_n_layers=1,
+        # crop_n_points_downscale_factor=2,
+        # min_mask_region_area=100,  # Requires open-cv to run post-processing
+)    
 
     input_size = int(input_size)
     w, h = image.size
@@ -205,61 +216,61 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
             # Title
             gr.Markdown(title)
 
-    # with gr.Tab("Everything mode"):
-    #     # Images
-    #     with gr.Row(variant="panel"):
-    #         with gr.Column(scale=1):
-    #             cond_img_e.render()
-    #
-    #         with gr.Column(scale=1):
-    #             segm_img_e.render()
-    #
-    #     # Submit & Clear
-    #     with gr.Row():
-    #         with gr.Column():
-    #             input_size_slider.render()
-    #
-    #             with gr.Row():
-    #                 contour_check = gr.Checkbox(
-    #                     value=True,
-    #                     label="withContours",
-    #                     info="draw the edges of the masks",
-    #                 )
-    #
-    #                 with gr.Column():
-    #                     segment_btn_e = gr.Button(
-    #                         "Segment Everything", variant="primary"
-    #                     )
-    #                     clear_btn_e = gr.Button("Clear", variant="secondary")
-    #
-    #             gr.Markdown("Try some of the examples below ⬇️")
-    #             gr.Examples(
-    #                 examples=examples,
-    #                 inputs=[cond_img_e],
-    #                 outputs=segm_img_e,
-    #                 fn=segment_everything,
-    #                 cache_examples=True,
-    #                 examples_per_page=4,
-    #             )
-    #
-    #         with gr.Column():
-    #             with gr.Accordion("Advanced options", open=False):
-    #                 # text_box = gr.Textbox(label="text prompt")
-    #                 with gr.Row():
-    #                     mor_check = gr.Checkbox(
-    #                         value=False,
-    #                         label="better_visual_quality",
-    #                         info="better quality using morphologyEx",
-    #                     )
-    #                     with gr.Column():
-    #                         retina_check = gr.Checkbox(
-    #                             value=True,
-    #                             label="use_retina",
-    #                             info="draw high-resolution segmentation masks",
-    #                         )
-    #             # Description
-    #             gr.Markdown(description_e)
-    #
+    with gr.Tab("Everything mode"):
+        # Images
+        with gr.Row(variant="panel"):
+            with gr.Column(scale=1):
+                cond_img_e.render()
+    
+            with gr.Column(scale=1):
+                segm_img_e.render()
+    
+        # Submit & Clear
+        with gr.Row():
+            with gr.Column():
+                input_size_slider.render()
+    
+                with gr.Row():
+                    contour_check = gr.Checkbox(
+                        value=True,
+                        label="withContours",
+                        info="draw the edges of the masks",
+                    )
+    
+                    with gr.Column():
+                        segment_btn_e = gr.Button(
+                            "Segment Everything", variant="primary"
+                        )
+                        clear_btn_e = gr.Button("Clear", variant="secondary")
+    
+                gr.Markdown("Try some of the examples below ⬇️")
+                gr.Examples(
+                    examples=examples,
+                    inputs=[cond_img_e],
+                    outputs=segm_img_e,
+                    fn=segment_everything,
+                    cache_examples=True,
+                    examples_per_page=4,
+                )
+    
+            with gr.Column():
+                with gr.Accordion("Advanced options", open=False):
+                    # text_box = gr.Textbox(label="text prompt")
+                    with gr.Row():
+                        mor_check = gr.Checkbox(
+                            value=False,
+                            label="better_visual_quality",
+                            info="better quality using morphologyEx",
+                        )
+                        with gr.Column():
+                            retina_check = gr.Checkbox(
+                                value=True,
+                                label="use_retina",
+                                info="draw high-resolution segmentation masks",
+                            )
+                # Description
+                gr.Markdown(description_e)
+    
     with gr.Tab("Point mode"):
         # Images
         with gr.Row(variant="panel"):
@@ -300,17 +311,17 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
 
     cond_img_p.select(get_points_with_draw, [cond_img_p, add_or_remove], cond_img_p)
 
-    # segment_btn_e.click(
-    #     segment_everything,
-    #     inputs=[
-    #         cond_img_e,
-    #         input_size_slider,
-    #         mor_check,
-    #         contour_check,
-    #         retina_check,
-    #     ],
-    #     outputs=segm_img_e,
-    # )
+    segment_btn_e.click(
+        segment_everything,
+        inputs=[
+            cond_img_e,
+            input_size_slider,
+            mor_check,
+            contour_check,
+            retina_check,
+        ],
+        outputs=segm_img_e,
+    )
 
     segment_btn_p.click(
         segment_with_points, inputs=[cond_img_p], outputs=[segm_img_p, cond_img_p]
