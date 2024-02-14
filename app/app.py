@@ -243,6 +243,45 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
             # Title
             gr.Markdown(title)
 
+    with gr.Tab("Point mode"):
+        # Images
+        with gr.Row(variant="panel"):
+            with gr.Column(scale=1):
+                cond_img_p.render()
+
+            with gr.Column(scale=1):
+                segm_img_p.render()
+
+        # Submit & Clear
+        with gr.Row():
+            with gr.Column():
+                with gr.Row():
+                    add_or_remove = gr.Radio(
+                        ["Add Mask", "Remove Area"],
+                        value="Add Mask",
+                    )
+
+                    with gr.Column():
+                        segment_btn_p = gr.Button(
+                            "Start segmenting!", variant="primary"
+                        )
+                        clear_btn_p = gr.Button("Restart", variant="secondary")
+
+                gr.Markdown("Try some of the examples below ⬇️")
+                gr.Examples(
+                    examples=examples,
+                    inputs=[cond_img_p],
+                    # outputs=segm_img_p,
+                    # fn=segment_with_points,
+                    # cache_examples=True,
+                    examples_per_page=4,
+                )
+
+            with gr.Column():
+                # Description
+                gr.Markdown(description_p)
+
+
     with gr.Tab("Everything mode"):
         # Images
         with gr.Row(variant="panel"):
