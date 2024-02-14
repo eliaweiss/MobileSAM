@@ -65,6 +65,7 @@ def segment_everything(
     input_size=1024,
     points_per_side=5,
     stability_score_thresh=0.1,
+    pred_iou_thresh=0.9,
     better_quality=False,
     withContours=True,
     use_retina=True,
@@ -79,7 +80,7 @@ def segment_everything(
     mask_generator = SamAutomaticMaskGenerator(
         model=mobile_sam,
         points_per_side=points_per_side,
-        # pred_iou_thresh=0.86,
+        pred_iou_thresh=pred_iou_thresh,
         stability_score_thresh=stability_score_thresh,
         # crop_n_layers=1,
         # crop_n_points_downscale_factor=2,
@@ -132,7 +133,7 @@ def segment_with_points(
     new_h = int(h * scale)
     image = image.resize((new_w, new_h))
     
-    print("global_points",global_points)
+    # print("global_points",global_points)
 
     scaled_points = np.array(
         [[int(x * scale) for x in point] for point in global_points]
@@ -143,8 +144,8 @@ def segment_with_points(
         print("No points selected")
         return image, image
 
-    print(scaled_points, scaled_points is not None)
-    print(scaled_point_label, scaled_point_label is not None)
+    # print(scaled_points, scaled_points is not None)
+    # print(scaled_point_label, scaled_point_label is not None)
 
     nd_image = np.array(image)
     predictor.set_image(nd_image)
@@ -240,6 +241,14 @@ stability_score_thresh_slider = gr.components.Slider(
     label="stability_score_thresh",
     info="stability_score_thresh",
 )
+pred_iou_thresh_slider = gr.components.Slider(
+    minimum=0.01,
+    maximum=1,
+    value=0.92,
+    step=0.01,
+    label="pred_iou_thresh",
+    info="pred_iou_thresh",
+)
 
 with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
     with gr.Row():
@@ -301,6 +310,7 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
                 input_size_slider.render()
                 points_per_side_slider.render()
                 stability_score_thresh_slider.render()
+                pred_iou_thresh_slider.render()
                 with gr.Row():
                     contour_check = gr.Checkbox(
                         value=True,
@@ -352,6 +362,7 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
             input_size_slider,
             points_per_side_slider,
             stability_score_thresh_slider,
+            pred_iou_thresh_slider,
             mor_check,
             contour_check,
             retina_check,
