@@ -45,12 +45,12 @@ description_p = """ # Instructions for point mode
               """
 
 examples = [
+    ["assets/picture1.jpg"],
     ["assets/picture0.jpg"],
     # ["assets/picture3.jpg"],
     # ["assets/picture4.jpg"],
     # ["assets/picture5.jpg"],
     # ["assets/picture6.jpg"],
-    # ["assets/picture1.jpg"],
     # ["assets/picture2.jpg"],
 ]
 

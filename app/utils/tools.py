@@ -39,7 +39,7 @@ def format_results(masks, scores, logits, filter=0, scoreThresh=0.8):
     for i in range(n):
         print("score",i,"=",scores[i])
         if i>0 and scores[i] < scoreThresh:
-            print(scores[i] ,"<", scoreThresh, "break")    
+            # print(scores[i] ,"<", scoreThresh, "break")    
             break
         annotation = {}
 
@@ -59,7 +59,7 @@ def format_results(masks, scores, logits, filter=0, scoreThresh=0.8):
         ]
         annotation["score"] = scores[i]
         annotation["area"] = annotation["segmentation"].sum()
-        print("area",annotation["area"])
+        # print("area",annotation["area"])
         annotations.append(annotation)
         break # only first result
     return annotations
