@@ -33,15 +33,21 @@ def segment_image(image, bbox):
     return black_image
 
 
-def format_results(masks, scores, logits, filter=0, max=1):
+def format_results(masks, scores, logits, filter=3000, scoreThresh=0.91):
     annotations = []
     n = len(scores)
     for i in range(n):
+        print("score",i,"=",scores[i])
+        if i>0 and scores[i] < scoreThresh:
+            print(scores[i] ,"<", scoreThresh, "break")    
+            break
         annotation = {}
 
         mask = masks[i]
         tmp = np.where(mask != 0)
         if np.sum(mask) < filter:
+            print(np.sum(mask) ,"<", filter, "continue")    
+            
             continue
         annotation["id"] = i
         annotation["segmentation"] = mask
@@ -52,11 +58,11 @@ def format_results(masks, scores, logits, filter=0, max=1):
             np.max(tmp[0]),
         ]
         annotation["score"] = scores[i]
-        print("score",i,"=",scores[i])
         annotation["area"] = annotation["segmentation"].sum()
+        print("area",annotation["area"])
         annotations.append(annotation)
-        if i >= max:
-            break
+        # if i >= max:
+        #     break
     return annotations
 
 

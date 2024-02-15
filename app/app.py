@@ -155,30 +155,33 @@ def segment_with_points(
         multimask_output=True,
     )
 
-    results = format_results(masks, scores, logits, 0)
+    results = format_results(masks, scores, logits)
+    if len(results) > 0:
 
-    annotations, _ = point_prompt(
-        results, scaled_points, scaled_point_label, new_h, new_w
-    )
-    annotations = np.array([annotations])
+        annotations, _ = point_prompt(
+            results, scaled_points, scaled_point_label, new_h, new_w
+        )
+        annotations = np.array([annotations])
 
-    fig = fast_process(
-        annotations=annotations,
-        image=image,
-        device=device,
-        scale=(1024 // input_size),
-        better_quality=better_quality,
-        mask_random_color=mask_random_color,
-        bbox=None,
-        use_retina=use_retina,
-        withContours=withContours,
-    )
-    print("------ total time: (s): %s" % round(time.time() - startTime, 2))
+        fig = fast_process(
+            annotations=annotations,
+            image=image,
+            device=device,
+            scale=(1024 // input_size),
+            better_quality=better_quality,
+            mask_random_color=mask_random_color,
+            bbox=None,
+            use_retina=use_retina,
+            withContours=withContours,
+        )
+        print("------ total time: (s): %s" % round(time.time() - startTime, 2))
 
-    global_points = []
-    global_point_label = []
-    # return fig, None
-    return fig, image
+        global_points = []
+        global_point_label = []
+        # return fig, None
+        return fig, image
+    
+    return image, image
 
 
 def get_points_with_draw(image, label, evt: gr.SelectData):
