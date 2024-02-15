@@ -184,9 +184,10 @@ def segment_with_points(
     return image, image
 
 
-def get_points_with_draw(image, label, evt: gr.SelectData):
+def get_points_with_draw(imageOrig, label, evt: gr.SelectData):
     global global_points
     global global_point_label
+    image = imageOrig.copy()
 
     x, y = evt.index[0], evt.index[1]
     point_radius, point_color = 15, (255, 255, 0) if label == "Add Mask" else (
@@ -356,7 +357,7 @@ with gr.Blocks(css=css, title="Faster Segment Anything(MobileSAM)") as demo:
                 gr.Markdown(description_e)
     
     
-    cond_img_p.select(get_points_with_draw, [cond_img_p, add_or_remove], cond_img_p)
+    cond_img_p.select(get_points_with_draw, [cond_img_p, add_or_remove], segm_img_p)
 
     segment_btn_e.click(
         segment_everything,

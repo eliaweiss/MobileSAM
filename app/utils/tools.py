@@ -33,7 +33,7 @@ def segment_image(image, bbox):
     return black_image
 
 
-def format_results(masks, scores, logits, filter=3000, scoreThresh=0.91):
+def format_results(masks, scores, logits, filter=0, scoreThresh=0.8):
     annotations = []
     n = len(scores)
     for i in range(n):
@@ -61,8 +61,7 @@ def format_results(masks, scores, logits, filter=3000, scoreThresh=0.91):
         annotation["area"] = annotation["segmentation"].sum()
         print("area",annotation["area"])
         annotations.append(annotation)
-        # if i >= max:
-        #     break
+        break # only first result
     return annotations
 
 
