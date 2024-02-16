@@ -12,20 +12,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ObjectAwareModel_path", type=str, default='./PromptGuidedDecoder/ObjectAwareModel.pt', help="ObjectAwareModel path")
-    parser.add_argument("--Prompt_guided_Mask_Decoder_path", type=str, default='./PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt', help="Prompt_guided_Mask_Decoder path")
-    parser.add_argument("--encoder_path", type=str, default="./", help="select your own path")
-    parser.add_argument("--img_path", type=str, default="./test_images/", help="path to image file")
+    parser.add_argument("--ObjectAwareModel_path", type=str, default='MobileSAMv2/PromptGuidedDecoder/ObjectAwareModel.pt', help="ObjectAwareModel path")
+    parser.add_argument("--Prompt_guided_Mask_Decoder_path", type=str, default='MobileSAMv2/PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt', help="Prompt_guided_Mask_Decoder path")
+    parser.add_argument("--encoder_path", type=str, default="MobileSAMv2/", help="select your own path")
+    parser.add_argument("--img_path", type=str, default="app/assets/", help="path to image file")
     parser.add_argument("--imgsz", type=int, default=1024, help="image size")
     parser.add_argument("--iou",type=float,default=0.9,help="yolo iou")
     parser.add_argument("--conf", type=float, default=0.4, help="yolo object confidence threshold")
     parser.add_argument("--retina",type=bool,default=True,help="draw segmentation masks",)
-    parser.add_argument("--output_dir", type=str, default="./", help="image save path")
-    parser.add_argument("--encoder_type", choices=['tiny_vit','sam_vit_h','mobile_sam','efficientvit_l2','efficientvit_l1','efficientvit_l0'], help="choose the model type")
+    parser.add_argument("--output_dir", type=str, default="MobileSAMv2/", help="image save path")
+    parser.add_argument("--encoder_type", default='efficientvit_l2', choices=['tiny_vit','sam_vit_h','mobile_sam','efficientvit_l2','efficientvit_l1','efficientvit_l0'], help="choose the model type")
     return parser.parse_args()
 def create_model():
-    Prompt_guided_path='./PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
-    obj_model_path='./weight/ObjectAwareModel.pt'
+    Prompt_guided_path='MobileSAMv2/PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
+    obj_model_path='MobileSAMv2/weight/ObjectAwareModel.pt'
     ObjAwareModel = ObjectAwareModel(obj_model_path)
     PromptGuidedDecoder=sam_model_registry['PromptGuidedDecoder'](Prompt_guided_path)
     mobilesamv2 = sam_model_registry['vit_h']()
@@ -55,9 +55,9 @@ def batch_iterator(batch_size: int, *args) -> Generator[List[Any], None, None]:
     for b in range(n_batches):
         yield [arg[b * batch_size : (b + 1) * batch_size] for arg in args]
 
-encoder_path={'efficientvit_l2':'./weight/l2.pt',
-            'tiny_vit':'./weight/mobile_sam.pt',
-            'sam_vit_h':'./weight/sam_vit_h.pt',}
+encoder_path={'efficientvit_l2':'MobileSAMv2/weight/l2.pt',
+            'tiny_vit':'MobileSAMv2/weight/mobile_sam.pt',
+            'sam_vit_h':'MobileSAMv2/weight/sam_vit_h.pt',}
 
 def main(args):
     # import pdb;pdb.set_trace()
@@ -69,17 +69,19 @@ def main(args):
     mobilesamv2.to(device=device)
     mobilesamv2.eval()
     predictor = SamPredictor(mobilesamv2)
-    image_files= os.listdir(args.img_path)
+    image_files = [file for file in os.listdir(args.img_path) if file.endswith('.jpg')]
     for image_name in image_files:
-        print(image_name)
+        
+        print(">>>",args.img_path + image_name)
         image = cv2.imread(args.img_path + image_name)
+        print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         obj_results = ObjAwareModel(image,device=device,retina_masks=args.retina,imgsz=args.imgsz,conf=args.conf,iou=args.iou)
         predictor.set_image(image)
         input_boxes1 = obj_results[0].boxes.xyxy
         input_boxes = input_boxes1.cpu().numpy()
         input_boxes = predictor.transform.apply_boxes(input_boxes, predictor.original_size)
-        input_boxes = torch.from_numpy(input_boxes).cuda()
+        input_boxes = torch.from_numpy(input_boxes) #.cuda()
         sam_mask=[]
         image_embedding=predictor.features
         image_embedding=torch.repeat_interleave(image_embedding, 320, dim=0)
