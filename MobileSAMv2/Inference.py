@@ -127,10 +127,12 @@ def main(args):
         plt.savefig("{}".format(output_dir+image_name), bbox_inches='tight', pad_inches = 0.0) 
 
 def extractInputBoxes2(image):
-    ctrMgr = CloseContourManager(image)
+    ctrMgr = CloseContourManager(image, minArea = 1000)
+    # ctrMgr.display()
     boxes = []
     for ctr in ctrMgr.contourZvMap.values():
         boxes.append(ctr.getBB())
+    print("boxes",len(boxes))
     return boxes
         
     
