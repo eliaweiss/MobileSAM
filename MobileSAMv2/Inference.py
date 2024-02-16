@@ -1,5 +1,6 @@
 import argparse
 import ast
+import time
 import torch
 from PIL import Image
 import cv2
@@ -72,6 +73,7 @@ def main(args):
     predictor = SamPredictor(mobilesamv2)
     image_files = [file for file in os.listdir(args.img_path) if file.endswith('.jpg')]
     for image_name in image_files:
+        start = time.time()
         
         print(">>>",args.img_path + image_name)
         image = cv2.imread(args.img_path + image_name)
@@ -114,6 +116,8 @@ def main(args):
         areas = torch.sum(annotation, dim=(1, 2))
         sorted_indices = torch.argsort(areas, descending=True)
         show_img = annotation[sorted_indices]
+        print("------ total time: (s): %s" % round(time.time() - start, 2))
+
         plt.figure(figsize=(20,20))
         background=np.ones_like(image)*255
         plt.imshow(background)
