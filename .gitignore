@@ -5,3 +5,4 @@ __py
 **/__pycache__/
 mobile_sam.egg-info/*
 app/gradio_cached_examples/22/log.csv
+*weight*
