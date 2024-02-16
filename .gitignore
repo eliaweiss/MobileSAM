@@ -6,3 +6,4 @@ __py
 mobile_sam.egg-info/*
 app/gradio_cached_examples/22/log.csv
 *weight*
+MobileSAMv2/out/*

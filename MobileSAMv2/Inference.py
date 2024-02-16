@@ -5,6 +5,7 @@ from PIL import Image
 import cv2
 import os
 import sys
+from MobileSAMv2.ctrMgr.CloseContourManager import CloseContourManager
 from mobilesamv2.promt_mobilesamv2 import ObjectAwareModel
 from mobilesamv2 import sam_model_registry, SamPredictor
 from typing import Any, Dict, Generator,List
@@ -20,7 +21,7 @@ def parse_args():
     parser.add_argument("--iou",type=float,default=0.9,help="yolo iou")
     parser.add_argument("--conf", type=float, default=0.4, help="yolo object confidence threshold")
     parser.add_argument("--retina",type=bool,default=True,help="draw segmentation masks",)
-    parser.add_argument("--output_dir", type=str, default="MobileSAMv2/", help="image save path")
+    parser.add_argument("--output_dir", type=str, default="MobileSAMv2/out/", help="image save path")
     parser.add_argument("--encoder_type", default='efficientvit_l2', choices=['tiny_vit','sam_vit_h','mobile_sam','efficientvit_l2','efficientvit_l1','efficientvit_l0'], help="choose the model type")
     return parser.parse_args()
 def create_model():
@@ -76,10 +77,12 @@ def main(args):
         image = cv2.imread(args.img_path + image_name)
         print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        obj_results = ObjAwareModel(image,device=device,retina_masks=args.retina,imgsz=args.imgsz,conf=args.conf,iou=args.iou)
         predictor.set_image(image)
-        input_boxes1 = obj_results[0].boxes.xyxy
-        input_boxes = input_boxes1.cpu().numpy()
+        # input_boxes1 = extractInputBoxes1(args, ObjAwareModel, device, image)
+        input_boxes1 = extractInputBoxes2(image)
+        # input_boxes1 = torch.tensor(input_boxes1)
+        # input_boxes = input_boxes1.cpu().numpy()
+        input_boxes = np.array(input_boxes1)
         input_boxes = predictor.transform.apply_boxes(input_boxes, predictor.original_size)
         input_boxes = torch.from_numpy(input_boxes) #.cuda()
         sam_mask=[]
@@ -118,6 +121,19 @@ def main(args):
         plt.axis('off')
         plt.show() 
         plt.savefig("{}".format(output_dir+image_name), bbox_inches='tight', pad_inches = 0.0) 
+
+def extractInputBoxes2(image):
+    ctrMgr = CloseContourManager(image)
+    boxes = []
+    for ctr in ctrMgr.contourZvMap.values():
+        boxes.append(ctr.getBB())
+    return boxes
+        
+    
+def extractInputBoxes1(args, ObjAwareModel, device, image):
+    obj_results = ObjAwareModel(image,device=device,retina_masks=args.retina,imgsz=args.imgsz,conf=args.conf,iou=args.iou)
+    input_boxes1 = obj_results[0].boxes.xyxy
+    return input_boxes1
 
 if __name__ == "__main__":
     args = parse_args()
