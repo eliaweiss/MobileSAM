@@ -22,18 +22,22 @@ class MobileSamBoxes:
         self.boxesJsonPath = boxesJsonPath
         self.encoder_type = "efficientvit_l2"
         self.prompt_guided_path='MobileSAMv2/PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
+        self.download()
         
     def download(self):
         # "https://mobile-sam.s3.eu-west-3.amazonaws.com/Prompt_guided_Mask_Decoder.pt"
         ptUrl = "https://mobile-sam.s3.eu-west-3.amazonaws.com/l2.pt"
         if not os.path.exists(efficientvit_l2_path):
+            print("download start")
+            start = time.time()
             urllib.request.urlretrieve(ptUrl, efficientvit_l2_path)
+            print("------ download time: (s): %s" % round(time.time() - start, 2))
 
     
     def batch_iterator(self, batch_size: int, *args) -> Generator[List[Any], None, None]:
         assert len(args) > 0 and all(
             len(a) == len(args[0]) for a in args
-        ), "Batched iteration must have inputs of all the same size."
+        ), "Batched iteration must have inputs of al§l the same size."
         n_batches = len(args[0]) // batch_size + int(len(args[0]) % batch_size != 0)
         for b in range(n_batches):
             yield [arg[b * batch_size : (b + 1) * batch_size] for arg in args]

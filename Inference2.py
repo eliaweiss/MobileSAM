@@ -1,5 +1,5 @@
 import numpy as np
-from MobileSamBoxes import MobileSamBoxes
+from MobileSAMv2.MobileSamBoxes import MobileSamBoxes
 import matplotlib.pyplot as plt
 
 def show_anns(anns):
@@ -18,8 +18,8 @@ def show_anns(anns):
 
 
 if __name__ == "__main__":
-    sam = MobileSamBoxes("./app/assets/picture1.jpg",
-                         "./notebooks/boxes.json")
+    sam = MobileSamBoxes("/Users/eliaweiss/work/ocrPlus/result/678e7ef0c034689d124d13df47c58695.jpg",
+                         "/Users/eliaweiss/ai/MobileSAM/notebooks/boxes.json")
     anns = sam.process()
     plt.figure(figsize=(10,10))
     background=np.ones_like(sam.image)*255
