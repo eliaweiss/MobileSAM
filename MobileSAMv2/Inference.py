@@ -77,10 +77,7 @@ def main(args):
     for image_name in image_files:
         start = time.time()
         
-        # img_fullpath = args.img_path + image_name
-        # img_fullpath = "/Users/eliaweiss/Documents/doc2txt/lineCv/0.jpg"
-        img_fullpath = "/Users/eliaweiss/ai/MobileSAM/app/assets/picture0.jpg"
-        img_fullpath = "/Users/eliaweiss/work/ocrPlus/result/678e7ef0c034689d124d13df47c58695.jpg"
+        img_fullpath = args.img_path + image_name
 
         print(">>>",img_fullpath)
         image = cv2.imread(img_fullpath)
@@ -88,8 +85,7 @@ def main(args):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
         # input_boxes1 = extractInputBoxes1(args, ObjAwareModel, device, image)
-        # input_boxes1 = extractInputBoxes_contour(image)
-        input_boxes1 = readInputBoxes_contour()
+        input_boxes1 = extractInputBoxes_contour(image)
         # input_boxes1 = torch.tensor(input_boxes1)
         # input_boxes = input_boxes1.cpu().numpy()
         input_boxes = np.array(input_boxes1)
@@ -123,7 +119,7 @@ def main(args):
         annotation = sam_mask
         areas = torch.sum(annotation, dim=(1, 2))
         sorted_indices = torch.argsort(areas, descending=True)
-        anns = annotation[sorted_indices]
+        anns = annotation # [sorted_indices]
         print("------ total time: (s): %s" % round(time.time() - start, 2))
 
         plt.figure(figsize=(10,10))
@@ -143,12 +139,7 @@ def extractInputBoxes_contour(image):
     print("boxes",len(boxes))
     return boxes
 
-def readInputBoxes_contour():
-    path = "/Users/eliaweiss/ai/MobileSAM/notebooks/boxes.json"
-    with open(path, 'r') as f:
-        data = json.load(f)
-    print("bb len",len(data))
-    return data
+
         
     
 def extractInputBoxes1(args, ObjAwareModel, device, image):
