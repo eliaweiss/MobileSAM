@@ -1,5 +1,6 @@
 import argparse
 import ast
+import json
 import time
 import torch
 from PIL import Image
@@ -76,13 +77,17 @@ def main(args):
     for image_name in image_files:
         start = time.time()
         
-        print(">>>",args.img_path + image_name)
-        image = cv2.imread(args.img_path + image_name)
+        # img_fullpath = args.img_path + image_name
+        img_fullpath = "/Users/eliaweiss/Documents/doc2txt/lineCv/0.jpg"
+
+        print(">>>",img_fullpath)
+        image = cv2.imread(img_fullpath)
         print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
         # input_boxes1 = extractInputBoxes1(args, ObjAwareModel, device, image)
-        input_boxes1 = extractInputBoxes2(image)
+        # input_boxes1 = extractInputBoxes_contour(image)
+        input_boxes1 = readInputBoxes_contour()
         # input_boxes1 = torch.tensor(input_boxes1)
         # input_boxes = input_boxes1.cpu().numpy()
         input_boxes = np.array(input_boxes1)
@@ -127,7 +132,7 @@ def main(args):
         plt.show() 
         plt.savefig("{}".format(output_dir+image_name), bbox_inches='tight', pad_inches = 0.0) 
 
-def extractInputBoxes2(image):
+def extractInputBoxes_contour(image):
     ctrMgr = CloseContourManager(image, minArea = 1000)
     ctrMgr.display()
     boxes = []
@@ -135,6 +140,12 @@ def extractInputBoxes2(image):
         boxes.append(ctr.getBB())
     print("boxes",len(boxes))
     return boxes
+
+def readInputBoxes_contour():
+    path = "/Users/eliaweiss/ai/MobileSAM/notebooks/boxes.json"
+    with open(path, 'r') as f:
+        data = json.load(f)
+    return data
         
     
 def extractInputBoxes1(args, ObjAwareModel, device, image):
