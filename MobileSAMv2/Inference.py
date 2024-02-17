@@ -78,7 +78,8 @@ def main(args):
         start = time.time()
         
         # img_fullpath = args.img_path + image_name
-        img_fullpath = "/Users/eliaweiss/Documents/doc2txt/lineCv/0.jpg"
+        # img_fullpath = "/Users/eliaweiss/Documents/doc2txt/lineCv/0.jpg"
+        img_fullpath = "/Users/eliaweiss/ai/MobileSAM/app/assets/picture0.jpg"
 
         print(">>>",img_fullpath)
         image = cv2.imread(img_fullpath)
@@ -121,13 +122,13 @@ def main(args):
         annotation = sam_mask
         areas = torch.sum(annotation, dim=(1, 2))
         sorted_indices = torch.argsort(areas, descending=True)
-        show_img = annotation[sorted_indices]
+        anns = annotation[sorted_indices]
         print("------ total time: (s): %s" % round(time.time() - start, 2))
 
-        plt.figure(figsize=(20,20))
+        plt.figure(figsize=(10,10))
         background=np.ones_like(image)*255
         plt.imshow(background)
-        show_anns(show_img)
+        show_anns(anns)
         plt.axis('off')
         plt.show() 
         plt.savefig("{}".format(output_dir+image_name), bbox_inches='tight', pad_inches = 0.0) 
