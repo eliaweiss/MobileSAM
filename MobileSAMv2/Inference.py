@@ -145,6 +145,7 @@ def readInputBoxes_contour():
     path = "/Users/eliaweiss/ai/MobileSAM/notebooks/boxes.json"
     with open(path, 'r') as f:
         data = json.load(f)
+    print("bb len",len(data))
     return data
         
     
