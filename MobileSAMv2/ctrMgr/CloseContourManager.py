@@ -33,10 +33,10 @@ class CloseContourManager:
         # Perform Canny to create a binary image for contour detection
         thresh = cv2.Canny(image, 75, 100, apertureSize=3)
         
-        # dilates
+        # # dilates
         thresh = cv2.dilate(thresh, np.ones((3, 3), np.uint8), iterations=1)
-        # erodes
-        thresh = cv2.erode(thresh, np.ones((3, 3), np.uint8), iterations=1)
+        # # erodes
+        # thresh = cv2.erode(thresh, np.ones((3, 3), np.uint8), iterations=1)
 
         # Find the contours in the binary image
         contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -52,13 +52,13 @@ class CloseContourManager:
             # if hh[2] != -1:  # checks that current contour has children
             if True:
                 area = None
-                # area = cv2.contourArea(contours[i])
+                area = cv2.contourArea(contours[i])
                 # if area < self.minArea:
                 #     continue
                 # print("Internal Area:", area1)
                 bRect = cv2.boundingRect(contours[i])
                 _,_, w,h = bRect
-                if w*h < self.minArea:
+                if w*h < self.minArea or area > self.minArea:
                     continue
                 
                 # choose unique color for each contour
@@ -114,7 +114,7 @@ class CloseContourManager:
             cv2.drawContours(contourImage, [contour], -1,color,-1)        
         # Display the output image
         cv2.imshow('Close Ctr Result', contourImage)
-        cv2.waitKey(0)        
+        # cv2.waitKey(0)        
         
     ################################################################
     def destroyWindow(self):

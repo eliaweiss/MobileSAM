@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument("--ObjectAwareModel_path", type=str, default='MobileSAMv2/PromptGuidedDecoder/ObjectAwareModel.pt', help="ObjectAwareModel path")
     parser.add_argument("--Prompt_guided_Mask_Decoder_path", type=str, default='MobileSAMv2/PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt', help="Prompt_guided_Mask_Decoder path")
     parser.add_argument("--encoder_path", type=str, default="MobileSAMv2/", help="select your own path")
+    # parser.add_argument("--img_path", type=str, default="/Users/eliaweiss/Documents/doc2txt/lineCv/", help="path to image file")
     parser.add_argument("--img_path", type=str, default="app/assets/", help="path to image file")
     parser.add_argument("--imgsz", type=int, default=1024, help="image size")
     parser.add_argument("--iou",type=float,default=0.9,help="yolo iou")
@@ -71,7 +72,7 @@ def main(args):
     mobilesamv2.to(device=device)
     mobilesamv2.eval()
     predictor = SamPredictor(mobilesamv2)
-    image_files = [file for file in os.listdir(args.img_path) if file.endswith('.jpg')]
+    image_files = [file for file in os.listdir(args.img_path) if file.endswith(('.png', '.jpeg', '.jpg'))]
     for image_name in image_files:
         start = time.time()
         
@@ -128,7 +129,7 @@ def main(args):
 
 def extractInputBoxes2(image):
     ctrMgr = CloseContourManager(image, minArea = 1000)
-    # ctrMgr.display()
+    ctrMgr.display()
     boxes = []
     for ctr in ctrMgr.contourZvMap.values():
         boxes.append(ctr.getBB())
