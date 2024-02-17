@@ -27,3 +27,5 @@ if __name__ == "__main__":
     show_anns(anns)
     plt.axis('off')
     plt.show() 
+    plt.savefig("{}".format("./out/result.jpg"), bbox_inches='tight', pad_inches = 0.0) 
+    
