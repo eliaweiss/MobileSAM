@@ -12,7 +12,6 @@ import numpy as np
 class MobileSamBoxes:
     
     encoder_path={'efficientvit_l2':'MobileSAMv2/weight/l2.pt',
-                'tiny_vit':'MobileSAMv2/weight/mobile_sam.pt',
                 'sam_vit_h':'MobileSAMv2/weight/sam_vit_h.pt',}
         
     def __init__(self, imagePath, boxesJsonPath, options = {}):
