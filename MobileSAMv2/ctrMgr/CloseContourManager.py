@@ -49,17 +49,17 @@ class CloseContourManager:
         contourMap = np.zeros((h, w), np.uint16)
         for i in range(len(contours)):
             hh = hierarchy[0, i]
-            # if hh[2] != -1:  # checks that current contour has children
-            if True:
+            if hh[2] != -1:  # checks that current contour has children
+            # if True:
                 area = None
                 area = cv2.contourArea(contours[i])
-                # if area < self.minArea:
-                #     continue
+                if area < self.minArea:
+                    continue
                 # print("Internal Area:", area1)
                 bRect = cv2.boundingRect(contours[i])
                 _,_, w,h = bRect
-                if w*h < self.minArea or area > self.minArea:
-                    continue
+                # if w*h < self.minArea: # or area > self.minArea:
+                #     continue
                 
                 # choose unique color for each contour
                 while True:
