@@ -5,6 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Inference boxes.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "MobileSAMv2/Inference2.py",
+            "console": "integratedTerminal",
+        },        {
             "name": "MobileSAMv2/Inference.py",
             "type": "debugpy",
             "request": "launch",

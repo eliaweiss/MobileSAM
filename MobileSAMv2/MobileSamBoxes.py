@@ -1,18 +1,10 @@
 
-import argparse
-import ast
 import json
 import time
 import torch
-from PIL import Image
 import cv2
-import os
-import sys
-from MobileSAMv2.ctrMgr.CloseContourManager import CloseContourManager
-from mobilesamv2.promt_mobilesamv2 import ObjectAwareModel
 from mobilesamv2 import sam_model_registry, SamPredictor
-from typing import Any, Dict, Generator,List
-import matplotlib.pyplot as plt
+from typing import Any, Generator, List
 import numpy as np
 
 
@@ -23,7 +15,7 @@ class MobileSamBoxes:
                 'tiny_vit':'MobileSAMv2/weight/mobile_sam.pt',
                 'sam_vit_h':'MobileSAMv2/weight/sam_vit_h.pt',}
         
-    def __init__(self, imagePath, boxesJsonPath, options):
+    def __init__(self, imagePath, boxesJsonPath, options = {}):
         self.imagePath = imagePath
         self.boxesJsonPath = boxesJsonPath
         self.encoder_type = "efficientvit_l2"
@@ -33,7 +25,7 @@ class MobileSamBoxes:
         
 
     
-    def batch_iterator(batch_size: int, *args) -> Generator[List[Any], None, None]:
+    def batch_iterator(self, batch_size: int, *args) -> Generator[List[Any], None, None]:
         assert len(args) > 0 and all(
             len(a) == len(args[0]) for a in args
         ), "Batched iteration must have inputs of all the same size."
@@ -49,7 +41,8 @@ class MobileSamBoxes:
         mobilesamv2.mask_decoder=PromptGuidedDecoder['MaskDecoder']
         return mobilesamv2 
     
-    def main(self, img_fullpath):
+    def process(self):
+        img_fullpath=  self.imagePath
         start = time.time()
         mobilesamv2= self.create_model()
         image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
@@ -61,7 +54,7 @@ class MobileSamBoxes:
 
 
         print(">>>",img_fullpath)
-        image = cv2.imread(img_fullpath)
+        self.image = image = cv2.imread(img_fullpath)
         print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
