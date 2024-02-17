@@ -80,6 +80,7 @@ def main(args):
         # img_fullpath = args.img_path + image_name
         # img_fullpath = "/Users/eliaweiss/Documents/doc2txt/lineCv/0.jpg"
         img_fullpath = "/Users/eliaweiss/ai/MobileSAM/app/assets/picture0.jpg"
+        img_fullpath = "/Users/eliaweiss/work/ocrPlus/result/678e7ef0c034689d124d13df47c58695.jpg"
 
         print(">>>",img_fullpath)
         image = cv2.imread(img_fullpath)
