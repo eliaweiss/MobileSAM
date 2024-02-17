@@ -1,17 +1,20 @@
 
 import json
+import os
 import time
 import torch
 import cv2
 from mobilesamv2 import sam_model_registry, SamPredictor
 from typing import Any, Generator, List
 import numpy as np
+import urllib.request
 
 
+efficientvit_l2_path = 'MobileSAMv2/weight/l2.pt'
 
 class MobileSamBoxes:
     
-    encoder_path={'efficientvit_l2':'MobileSAMv2/weight/l2.pt',
+    encoder_path={'efficientvit_l2':efficientvit_l2_path,
                 'sam_vit_h':'MobileSAMv2/weight/sam_vit_h.pt',}
         
     def __init__(self, imagePath, boxesJsonPath, options = {}):
@@ -20,8 +23,11 @@ class MobileSamBoxes:
         self.encoder_type = "efficientvit_l2"
         self.prompt_guided_path='MobileSAMv2/PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
         
-        
-        
+    def download(self):
+        # "https://mobile-sam.s3.eu-west-3.amazonaws.com/Prompt_guided_Mask_Decoder.pt"
+        ptUrl = "https://mobile-sam.s3.eu-west-3.amazonaws.com/l2.pt"
+        if not os.path.exists(efficientvit_l2_path):
+            urllib.request.urlretrieve(ptUrl, efficientvit_l2_path)
 
     
     def batch_iterator(self, batch_size: int, *args) -> Generator[List[Any], None, None]:
