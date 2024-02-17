@@ -40,7 +40,7 @@ class MobileSamBoxes:
         mobilesamv2.mask_decoder=PromptGuidedDecoder['MaskDecoder']
         return mobilesamv2 
     
-    def process(self):
+    def process(self, input_boxes1 = None):
         img_fullpath=  self.imagePath
         start = time.time()
         mobilesamv2= self.create_model()
@@ -57,8 +57,8 @@ class MobileSamBoxes:
         print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
-
-        input_boxes1 = self.readBoxesJson()
+        if input_boxes1 is None:
+            input_boxes1 = self.readBoxesJson()
 
         input_boxes = np.array(input_boxes1)
         input_boxes = predictor.transform.apply_boxes(input_boxes, predictor.original_size)
@@ -90,15 +90,11 @@ class MobileSamBoxes:
         print("------ total time: (s): %s" % round(time.time() - start, 2))
         sam_mask=torch.cat(sam_mask)
         return sam_mask
-        # annotation = sam_mask
-        # areas = torch.sum(annotation, dim=(1, 2))
-        # sorted_indices = torch.argsort(areas, descending=True)
-        # anns = annotation[sorted_indices]
 
 
 
     def readBoxesJson(self):
-        path = self.boxesJsonPath # "/Users/eliaweiss/ai/MobileSAM/notebooks/boxes.json"
+        path = self.boxesJsonPath 
         with open(path, 'r') as f:
             data = json.load(f)
         print("bb len",len(data))
