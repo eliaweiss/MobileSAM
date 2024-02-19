@@ -40,10 +40,16 @@ def predict_category(model, scaler, image):
     Returns:
         predicted_category: Category assigned to the image.
     """
+    startTime = time.time()
     embedding = encodeEmbSAM(image)
     embedding = embedding.squeeze()
+    print("------ encodeEmbSAM time: (s): %s" % round(time.time() - startTime, 2))
+
+    startTime = time.time()    
     embedding_scaled = scaler.transform([embedding])
     predicted_category = model.predict(embedding_scaled)[0]
+    print("------ predict time: (s): %s" % round(time.time() - startTime, 2))
+   
     return predicted_category
 new_image_paths = [
     "/Users/eliaweiss/Documents/doc2txt/sihach/Invoices/1/img1/1.jpg",
@@ -51,7 +57,5 @@ new_image_paths = [
     "/Users/eliaweiss/Documents/doc2txt/sihach/Invoices/3/img3/1.jpg",
 ]
 for new_image_path in new_image_paths:
-    startTime = time.time()
     predicted_category = predict_category(model, scaler, new_image_path)
-    print("------ predict time: (s): %s" % round(time.time() - startTime, 2))
     print(f"Predicted category for {new_image_path}: {predicted_category}")
