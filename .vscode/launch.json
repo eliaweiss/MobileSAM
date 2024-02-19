@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "svm",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "svmMain.py",
+            "console": "integratedTerminal",
+        },   
+        {
             "name": "Inference boxes.py",
             "type": "debugpy",
             "request": "launch",
