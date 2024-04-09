@@ -17,8 +17,8 @@ class MobileSamBoxes:
     encoder_path={'efficientvit_l2':efficientvit_l2_path,
                 'sam_vit_h':'MobileSAMv2/weight/sam_vit_h.pt',}
         
-    def __init__(self, imagePath, boxesJsonPath, options = {}):
-        self.imagePath = imagePath
+    def __init__(self, img, boxesJsonPath=None, options = {}):
+        self.img = img
         self.boxesJsonPath = boxesJsonPath
         self.encoder_type = "efficientvit_l2"
         self.prompt_guided_path='MobileSAMv2/PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
@@ -50,8 +50,7 @@ class MobileSamBoxes:
         mobilesamv2.mask_decoder=PromptGuidedDecoder['MaskDecoder']
         return mobilesamv2 
     
-    def process(self, input_boxes1 = None):
-        img_fullpath=  self.imagePath
+    def process(self, input_boxes = None):
         start = time.time()
         mobilesamv2= self.create_model()
         image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
@@ -62,15 +61,14 @@ class MobileSamBoxes:
         predictor = SamPredictor(mobilesamv2)
 
 
-        print(">>>",img_fullpath)
-        self.image = image = cv2.imread(img_fullpath)
+        self.image = image = np.array(self.img)
         print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
-        if input_boxes1 is None:
-            input_boxes1 = self.readBoxesJson()
+        if input_boxes is None:
+            input_boxes = self.readBoxesJson()
 
-        input_boxes = np.array(input_boxes1)
+        input_boxes = np.array(input_boxes)
         input_boxes = predictor.transform.apply_boxes(input_boxes, predictor.original_size)
         input_boxes = torch.from_numpy(input_boxes) #.cuda()
         sam_mask=[]
@@ -109,4 +107,5 @@ class MobileSamBoxes:
             data = json.load(f)
         print("bb len",len(data))
         return data
+        
         
