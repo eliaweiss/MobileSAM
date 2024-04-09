@@ -12,10 +12,17 @@
             "console": "integratedTerminal",
         },   
         {
+            "name": "Inference_withTblDet",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "MobileSAMv2/Inference_withTblDet.py",
+            "console": "integratedTerminal",
+        },        
+        {
             "name": "Inference boxes.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "MobileSAMv2/Inference_withBoxes.py.py",
+            "program": "MobileSAMv2/Inference_withBoxes.py",
             "console": "integratedTerminal",
         },        
         // {
@@ -23,7 +30,7 @@
         //     "name": "MobileSAMv2/Inference.py",
         //     "type": "debugpy",
         //     "request": "launch",
-        //     "program": "MobileSAMv2/Inference_withYolo.py.py",
+        //     "program": "MobileSAMv2/Inference_withYolo.py",
         //     "console": "integratedTerminal",
         // },
         {
