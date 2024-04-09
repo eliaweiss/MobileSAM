@@ -15,15 +15,17 @@
             "name": "Inference boxes.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "MobileSAMv2/Inference2.py",
+            "program": "MobileSAMv2/Inference_withBoxes.py.py",
             "console": "integratedTerminal",
-        },        {
-            "name": "MobileSAMv2/Inference.py",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "MobileSAMv2/Inference.py",
-            "console": "integratedTerminal",
-        },
+        },        
+        // {
+        //     // note: require yolo for box predication
+        //     "name": "MobileSAMv2/Inference.py",
+        //     "type": "debugpy",
+        //     "request": "launch",
+        //     "program": "MobileSAMv2/Inference_withYolo.py.py",
+        //     "console": "integratedTerminal",
+        // },
         {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
