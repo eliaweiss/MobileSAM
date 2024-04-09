@@ -2,8 +2,9 @@ import torchvision.transforms as T
 import torch
 torch.set_grad_enabled(False);
 
+from transformers import AutoModelForObjectDetection
 
-from transformers import TableTransformerForObjectDetection
+# from transformers import TableTransformerForObjectDetection
 
 
 class TableDetect:
@@ -14,7 +15,9 @@ class TableDetect:
             T.ToTensor(),
             T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
-        self.model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
+
+        self.model = AutoModelForObjectDetection.from_pretrained("microsoft/table-transformer-detection", revision="no_timm")        
+        # self.model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
         self.model.eval();
 
     # for output bounding box post-processing
