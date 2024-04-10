@@ -53,7 +53,23 @@ class AlignTable_Processor:
                 
                 
     ################################################################
-    def rotate_point(center, angle, point):
+    def unRotateCell(self,cell):
+        # calculate bbox in original image
+        (x1,y1,x2,y2) = cell["bbox"]
+        bbox4 = np.array([(x1,y1),(x2,y1),(x2,y2),(x1,y2)])
+        xBias, yBias, _, _ = self.cropBBox
+        bbox4[:,0] += xBias
+        bbox4[:,1] += yBias
+        
+        # un-rotate box
+        center,_,angle = self.minAreaRect
+        rotated_bbox = np.array([self.rotate_point(pt) for pt in bbox4])
+        
+        return rotated_bbox
+        
+         
+    ################################################################
+    def rotate_point(self, point, center=None, angle=None):
         """
         Calculates the new location of a point after rotation around a center.
 
@@ -65,6 +81,11 @@ class AlignTable_Processor:
         Returns:
             A tuple (x, y) representing the new location of the point.
         """
+        if center is None:
+            center,_,_ = self.minAreaRect
+        if angle is None:
+            _,_,angle = self.minAreaRect
+            angle = angle-90
 
         # Convert angle to radians
         radians = math.radians(angle)
