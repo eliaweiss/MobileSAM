@@ -10,18 +10,18 @@ import numpy as np
 import urllib.request
 
 
-efficientvit_l2_path = 'weight/l2.pt'
+efficientvit_l2_path = 'weights/l2.pt'
 
 class MobileSamBoxes:
     
-    encoder_path={'efficientvit_l2':efficientvit_l2_path,
-                'sam_vit_h':'weight/sam_vit_h.pt',}
+    # encoder_path={'efficientvit_l2':efficientvit_l2_path,
+    #             'sam_vit_h':'weight/sam_vit_h.pt',}
         
     def __init__(self, img, boxesJsonPath=None, options = {}):
         self.img = img
         self.boxesJsonPath = boxesJsonPath
         self.encoder_type = "efficientvit_l2"
-        self.prompt_guided_path='PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
+        self.prompt_guided_path='weights/Prompt_guided_Mask_Decoder.pt'
         self.download()
         
     def download(self):
@@ -53,7 +53,8 @@ class MobileSamBoxes:
     def process(self, input_boxes = None):
         start = time.time()
         mobilesamv2= self.create_model()
-        image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
+        image_encoder=sam_model_registry[self.encoder_type](efficientvit_l2_path)
+        # image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
         mobilesamv2.image_encoder=image_encoder
         device = "cuda" if torch.cuda.is_available() else "cpu"
         mobilesamv2.to(device=device)
