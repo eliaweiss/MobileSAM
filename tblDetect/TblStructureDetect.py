@@ -80,3 +80,5 @@ class TblStructureDetect:
 
         cells = self.outputs_to_objects(outputs, tbl_patch.size)
         return cells
+    
+    
