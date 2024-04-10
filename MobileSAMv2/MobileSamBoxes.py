@@ -10,18 +10,18 @@ import numpy as np
 import urllib.request
 
 
-efficientvit_l2_path = 'MobileSAMv2/weight/l2.pt'
+efficientvit_l2_path = 'weight/l2.pt'
 
 class MobileSamBoxes:
     
     encoder_path={'efficientvit_l2':efficientvit_l2_path,
-                'sam_vit_h':'MobileSAMv2/weight/sam_vit_h.pt',}
+                'sam_vit_h':'weight/sam_vit_h.pt',}
         
     def __init__(self, img, boxesJsonPath=None, options = {}):
         self.img = img
         self.boxesJsonPath = boxesJsonPath
         self.encoder_type = "efficientvit_l2"
-        self.prompt_guided_path='MobileSAMv2/PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
+        self.prompt_guided_path='PromptGuidedDecoder/Prompt_guided_Mask_Decoder.pt'
         self.download()
         
     def download(self):
