@@ -1,3 +1,4 @@
+from copy import deepcopy
 import cv2
 import numpy as np
 from PIL import Image
@@ -53,6 +54,14 @@ class AlignTable_Processor:
                 
                 
     ################################################################
+    def unRotateAllCell(self,cells):
+        cells = deepcopy(cells)
+        for c in cells:
+            rotated_bbox = self.unRotateCell(c)
+            c["bbox"] = rotated_bbox.tolist()
+        return cells
+        
+    ################################################################
     def unRotateCell(self,cell):
         # calculate bbox in original image
         (x1,y1,x2,y2) = cell["bbox"]
@@ -62,7 +71,6 @@ class AlignTable_Processor:
         bbox4[:,1] += yBias
         
         # un-rotate box
-        center,_,angle = self.minAreaRect
         rotated_bbox = np.array([self.rotate_point(pt) for pt in bbox4])
         
         return rotated_bbox
