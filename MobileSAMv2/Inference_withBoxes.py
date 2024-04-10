@@ -1,5 +1,5 @@
 import numpy as np
-from MobileSamBoxes import MobileSamBoxes
+from tblDetect.MobileSamBoxes import MobileSamBoxes
 import matplotlib.pyplot as plt
 
 def show_anns(anns):
