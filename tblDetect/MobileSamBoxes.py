@@ -4,7 +4,7 @@ import os
 import time
 import torch
 import cv2
-from MobileSAMv2.mobile_sam_v2 import sam_model_registry, SamPredictor
+from mobile_sam_v2 import sam_model_registry, SamPredictor
 from typing import Any, Generator, List
 import numpy as np
 import urllib.request
