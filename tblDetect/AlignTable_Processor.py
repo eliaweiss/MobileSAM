@@ -30,8 +30,10 @@ class AlignTable_Processor:
         bRect = cv2.boundingRect(minAreaBBox)
         x,y,w,h = bRect
         x1,y1 = x+w,y+h   
-        self.cropBBox = [x,y,x1,y1]     
-        imgRotated =  self.img.rotate((angle-90), center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
+        self.cropBBox = [x,y,x1,y1]   
+        if angle < 0:
+            angle = angle-90  
+        imgRotated =  self.img.rotate(angle, center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
         imgRotated    
         tbl_patch = np.array(imgRotated)
         tbl_patch = tbl_patch[y:y1, x:x1]
@@ -93,7 +95,8 @@ class AlignTable_Processor:
             center,_,_ = self.minAreaRect
         if angle is None:
             _,_,angle = self.minAreaRect
-            angle = angle-90
+            if angle<0:
+                angle = angle-90
 
         # Convert angle to radians
         radians = math.radians(angle)
