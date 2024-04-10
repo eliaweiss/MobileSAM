@@ -31,7 +31,7 @@ class AlignTable_Processor:
         x,y,w,h = bRect
         x1,y1 = x+w,y+h   
         self.cropBBox = [x,y,x1,y1]   
-        if angle < 0:
+        if angle > 45:
             angle = angle-90  
         imgRotated =  self.img.rotate(angle, center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
         imgRotated    
@@ -95,7 +95,7 @@ class AlignTable_Processor:
             center,_,_ = self.minAreaRect
         if angle is None:
             _,_,angle = self.minAreaRect
-            if angle<0:
+            if angle > 45:
                 angle = angle-90
 
         # Convert angle to radians
