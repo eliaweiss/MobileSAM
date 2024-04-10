@@ -22,6 +22,15 @@ class AlignTable_Processor:
         return mask
     
     ################################################################
+    def boundToImgSize(self,x,y,x1,y1):
+        w,h = self.img.size
+        x = max(x,0)
+        y = max(y,0)
+        x1 = min(x1,w-1)
+        y1 = min(y1,h-1)
+        return x,y,x1,y1        
+        
+    ################################################################
     def getAlignTable(self):
         contour = self.getTblContour()
         center, (w,h), angle = cv2.minAreaRect(contour)
@@ -30,11 +39,10 @@ class AlignTable_Processor:
         bRect = cv2.boundingRect(minAreaBBox)
         x,y,w,h = bRect
         x1,y1 = x+w,y+h   
-        self.cropBBox = [x,y,x1,y1]   
+        self.cropBBox = x,y,x1,y1 = self.boundToImgSize(x,y,x1,y1)
         if angle > 45:
             angle = angle-90  
         imgRotated =  self.img.rotate(angle, center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
-        imgRotated    
         tbl_patch = np.array(imgRotated)
         tbl_patch = tbl_patch[y:y1, x:x1]
         tbl_patch_pil = Image.fromarray(tbl_patch)

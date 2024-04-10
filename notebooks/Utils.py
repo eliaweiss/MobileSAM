@@ -25,7 +25,7 @@ def applyRotatedResult(tmpImg, rotated_cells ):
     for cell in rotated_cells:
         rotated_bbox = np.array(cell['bbox'])
         color = np.int0(np.random.random(3)*255).tolist()
-        cv2.drawContours(tmpImg, [rotated_bbox], 0, color, 2)  
+        cv2.drawContours(tmpImg, [rotated_bbox], 0, color, 4)  
   
 #########################################
 def plot_results(model, pil_img, prob, boxes):
