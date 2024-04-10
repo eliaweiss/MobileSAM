@@ -14,9 +14,7 @@ import urllib.request
 class MobileSamBoxes:
         
     ################################
-    def __init__(self, img, boxesJsonPath=None, options = {}):
-        self.img = img
-        self.boxesJsonPath = boxesJsonPath
+    def __init__(self, ):
         self.init_weights()
         self.init_predictor()        
         
@@ -67,12 +65,12 @@ class MobileSamBoxes:
         return self.predictor    
     
     ################################
-    def process(self, input_boxes = None):
+    def process(self, img, input_boxes):
         start = time.time()
         predictor = self.predictor
 
 
-        self.image = image = np.array(self.img)
+        image = np.array(img)
         print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)

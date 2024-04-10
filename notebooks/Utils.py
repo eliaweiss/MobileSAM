@@ -66,3 +66,24 @@ def plot_annotations(image, anns):
     plt.axis('off')
     plt.show() 
     # plt.savefig("{}".format("./out/result.jpg"), bbox_inches='tight', pad_inches = 0.0)         
+    
+#########################################
+    
+def plot_results_cells(tblStructDetect, tbl_patch, cells, class_to_visualize):
+    if class_to_visualize not in tblStructDetect.id2label.values():
+      raise ValueError(f"Class should be one of the available classes {tblStructDetect.id2label}")
+
+    plt.figure(figsize=(16,10))
+    plt.imshow(tbl_patch)
+    ax = plt.gca()
+
+    for cell in cells:
+        bbox = cell["bbox"]
+        label = cell["label"]
+
+        if label == class_to_visualize:
+          xmin, ymin, xmax, ymax = tuple(bbox)
+
+          ax.add_patch(plt.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin, fill=False, color=np.random.random(3), linewidth=3))
+          plt.axis('off')
+              
