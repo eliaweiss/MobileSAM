@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image
-
+import math
 
 class AlignTable_Processor:
     ################################################################
@@ -51,3 +51,32 @@ class AlignTable_Processor:
         return contour
         
                 
+                
+    ################################################################
+    def rotate_point(center, angle, point):
+        """
+        Calculates the new location of a point after rotation around a center.
+
+        Args:
+            center: A tuple (x, y) representing the center of rotation.
+            angle: The rotation angle in degrees.
+            point: A tuple (x, y) representing the point to be rotated.
+
+        Returns:
+            A tuple (x, y) representing the new location of the point.
+        """
+
+        # Convert angle to radians
+        radians = math.radians(angle)
+
+        # Translate point relative to center
+        translated_point = (point[0] - center[0], point[1] - center[1])
+
+        # Apply rotation matrix
+        new_x = translated_point[0] * math.cos(radians) - translated_point[1] * math.sin(radians)
+        new_y = translated_point[0] * math.sin(radians) + translated_point[1] * math.cos(radians)
+
+        # Translate back to original coordinate system
+        rotated_point = (int(new_x + center[0]), int(new_y + center[1]))
+
+        return rotated_point                
