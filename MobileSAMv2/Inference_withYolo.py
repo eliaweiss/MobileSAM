@@ -8,8 +8,8 @@ import cv2
 import os
 import sys
 from MobileSAMv2.ctrMgr.CloseContourManager import CloseContourManager
-from mobilesamv2.promt_mobilesamv2 import ObjectAwareModel
-from mobilesamv2 import sam_model_registry, SamPredictor
+from mobile_sam_v2.promt_mobilesamv2 import ObjectAwareModel
+from mobile_sam_v2 import sam_model_registry, SamPredictor
 from typing import Any, Dict, Generator,List
 import matplotlib.pyplot as plt
 import numpy as np
