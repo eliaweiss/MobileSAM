@@ -13,12 +13,14 @@ import urllib.request
 
 class MobileSamBoxes:
         
+    ################################
     def __init__(self, img, boxesJsonPath=None, options = {}):
         self.img = img
         self.boxesJsonPath = boxesJsonPath
         self.init_weights()
         self.init_predictor()        
         
+    ################################
     def init_weights(self):
         self.weights_path = 'weights'
         self.encoder_type = "efficientvit_l2"
@@ -34,6 +36,7 @@ class MobileSamBoxes:
             print("------ download time: (s): %s" % round(time.time() - start, 2))
 
     
+    ################################
     def batch_iterator(self, batch_size: int, *args) -> Generator[List[Any], None, None]:
         assert len(args) > 0 and all(
             len(a) == len(args[0]) for a in args
@@ -43,6 +46,7 @@ class MobileSamBoxes:
             yield [arg[b * batch_size : (b + 1) * batch_size] for arg in args]
 
     
+    ################################
     def create_model(self):
         PromptGuidedDecoder=sam_model_registry['PromptGuidedDecoder'](self.prompt_guided_path)
         mobilesamv2 = sam_model_registry['vit_h']()
@@ -50,6 +54,19 @@ class MobileSamBoxes:
         mobilesamv2.mask_decoder=PromptGuidedDecoder['MaskDecoder']
         return mobilesamv2 
     
+    ################################
+    def init_predictor(self):
+        mobilesamv2= self.create_model()
+        image_encoder=sam_model_registry[self.encoder_type](self.efficient_vit_l2_path)
+        # image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
+        mobilesamv2.image_encoder=image_encoder
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        mobilesamv2.to(device=device)
+        mobilesamv2.eval()
+        self.predictor = SamPredictor(mobilesamv2)
+        return self.predictor    
+    
+    ################################
     def process(self, input_boxes = None):
         start = time.time()
         predictor = self.predictor
@@ -93,19 +110,11 @@ class MobileSamBoxes:
         sam_mask=torch.cat(sam_mask)
         return sam_mask
 
-    def init_predictor(self):
-        mobilesamv2= self.create_model()
-        image_encoder=sam_model_registry[self.encoder_type](self.efficient_vit_l2_path)
-        # image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
-        mobilesamv2.image_encoder=image_encoder
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        mobilesamv2.to(device=device)
-        mobilesamv2.eval()
-        self.predictor = SamPredictor(mobilesamv2)
-        return self.predictor
 
 
 
+
+    ################################
     def readBoxesJson(self):
         path = self.boxesJsonPath 
         with open(path, 'r') as f:
