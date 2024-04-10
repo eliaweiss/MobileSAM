@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 
 
-class AlignTable:
+class AlignTable_Processor:
     ################################################################
     def __init__(self, img, annotation=None):
         self.img = img
@@ -14,8 +14,8 @@ class AlignTable:
     def setMaskFromAnnotation(self, annotation):
         m = annotation.bool()
         m=m.cpu().numpy()
-        w,h = self.img.size()
-        mask = np.zeros((w, h, 1), np.uint8)
+        w,h = self.img.size
+        mask = np.zeros((h, w, 1), np.uint8)
         mask[m] = 255
         self.mask = mask
         return mask
