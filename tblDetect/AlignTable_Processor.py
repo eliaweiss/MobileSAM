@@ -28,7 +28,8 @@ class AlignTable_Processor:
         minAreaBBox = np.int0(cv2.boxPoints(self.minAreaRect))
         bRect = cv2.boundingRect(minAreaBBox)
         x,y,w,h = bRect
-        x1,y1 = x+w,y+h        
+        x1,y1 = x+w,y+h   
+        self.cropBBox = [x,y,x1,y1]     
         imgRotated =  self.img.rotate((angle-90), center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
         imgRotated    
         tbl_patch = np.array(imgRotated)
