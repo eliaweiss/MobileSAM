@@ -1,9 +1,0 @@
-torch
-torchvision
-timm
-opencv-python
-numpy
-torchpack
-onnx
-onnxsim
-# git+https://github.com/dhkim2810/MobileSAM.git
