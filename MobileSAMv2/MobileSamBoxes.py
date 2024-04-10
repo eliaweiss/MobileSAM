@@ -12,16 +12,14 @@ import urllib.request
 
 
 class MobileSamBoxes:
-    
-    # encoder_path={'efficientvit_l2':efficient_vit_l2_path,
-    #             'sam_vit_h':'weight/sam_vit_h.pt',}
         
     def __init__(self, img, boxesJsonPath=None, options = {}):
         self.img = img
         self.boxesJsonPath = boxesJsonPath
-        self.download()
+        self.init_weights()
+        self.init_predictor()        
         
-    def download(self):
+    def init_weights(self):
         self.weights_path = 'weights'
         self.encoder_type = "efficientvit_l2"
         self.prompt_guided_path=os.path.join(self.weights_path,'Prompt_guided_Mask_Decoder.pt')
@@ -54,14 +52,7 @@ class MobileSamBoxes:
     
     def process(self, input_boxes = None):
         start = time.time()
-        mobilesamv2= self.create_model()
-        image_encoder=sam_model_registry[self.encoder_type](self.efficient_vit_l2_path)
-        # image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
-        mobilesamv2.image_encoder=image_encoder
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        mobilesamv2.to(device=device)
-        mobilesamv2.eval()
-        predictor = SamPredictor(mobilesamv2)
+        predictor = self.predictor
 
 
         self.image = image = np.array(self.img)
@@ -77,17 +68,17 @@ class MobileSamBoxes:
         sam_mask=[]
         image_embedding=predictor.features
         image_embedding=torch.repeat_interleave(image_embedding, 320, dim=0)
-        prompt_embedding=mobilesamv2.prompt_encoder.get_dense_pe()
+        prompt_embedding=predictor.model.prompt_encoder.get_dense_pe()
         prompt_embedding=torch.repeat_interleave(prompt_embedding, 320, dim=0)
         for (boxes,) in self.batch_iterator(320, input_boxes):
             with torch.no_grad():
                 image_embedding=image_embedding[0:boxes.shape[0],:,:,:]
                 prompt_embedding=prompt_embedding[0:boxes.shape[0],:,:,:]
-                sparse_embeddings, dense_embeddings = mobilesamv2.prompt_encoder(
+                sparse_embeddings, dense_embeddings = predictor.model.prompt_encoder(
                     points=None,
                     boxes=boxes,
                     masks=None,)
-                low_res_masks, _ = mobilesamv2.mask_decoder(
+                low_res_masks, _ = predictor.model.mask_decoder(
                     image_embeddings=image_embedding,
                     image_pe=prompt_embedding,
                     sparse_prompt_embeddings=sparse_embeddings,
@@ -96,11 +87,22 @@ class MobileSamBoxes:
                     simple_type=True,
                 )
                 low_res_masks=predictor.model.postprocess_masks(low_res_masks, predictor.input_size, predictor.original_size)
-                sam_mask_pre = (low_res_masks > mobilesamv2.mask_threshold)*1.0
+                sam_mask_pre = (low_res_masks > predictor.model.mask_threshold)*1.0
                 sam_mask.append(sam_mask_pre.squeeze(1))
         print("------ total time: (s): %s" % round(time.time() - start, 2))
         sam_mask=torch.cat(sam_mask)
         return sam_mask
+
+    def init_predictor(self):
+        mobilesamv2= self.create_model()
+        image_encoder=sam_model_registry[self.encoder_type](self.efficient_vit_l2_path)
+        # image_encoder=sam_model_registry[self.encoder_type](self.encoder_path[self.encoder_type])
+        mobilesamv2.image_encoder=image_encoder
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        mobilesamv2.to(device=device)
+        mobilesamv2.eval()
+        self.predictor = SamPredictor(mobilesamv2)
+        return self.predictor
 
 
 
