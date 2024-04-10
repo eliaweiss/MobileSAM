@@ -13,15 +13,19 @@ COLORS = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
 #########################################
 def plot_rotatedResult(img, rotated_cells):
     tmpImg = np.array(img)
-    for cell in rotated_cells:
-        rotated_bbox = np.array(cell['bbox'])
-        color = np.int0(np.random.random(3)*255).tolist()
-        cv2.drawContours(tmpImg, [rotated_bbox], 0, color, 2)  
-    pil_img = Image.fromarray(tmpImg)
+    pil_img = applyRotatedResult(rotated_cells, tmpImg)
     plt.figure(figsize=(16,10))
     plt.imshow(pil_img)
     plt.axis('off')
     plt.show() 
+
+#########################################
+
+def applyRotatedResult(tmpImg, rotated_cells ):
+    for cell in rotated_cells:
+        rotated_bbox = np.array(cell['bbox'])
+        color = np.int0(np.random.random(3)*255).tolist()
+        cv2.drawContours(tmpImg, [rotated_bbox], 0, color, 2)  
   
 #########################################
 def plot_results(model, pil_img, prob, boxes):
