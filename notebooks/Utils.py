@@ -59,6 +59,7 @@ def show_anns(anns):
         m=m.cpu().numpy()
         color_mask = np.concatenate([np.random.random(3), [1]])
         img[m] = color_mask
+        break
     ax.imshow(img)
 
 
@@ -122,3 +123,22 @@ def outputs_to_objects(outputs, img_size, id2label):
                             'bbox': [float(elem) for elem in bbox]})
 
     return objects   
+
+def calculate_angle(slope):
+    """
+    Calculates the angle of the line relative to the x-axis in degrees.
+
+    Args:
+    slope: The slope of the estimated line.
+
+    Returns:
+    The angle of the line in degrees.
+    """
+
+    # Use arctangent (atan) to find the angle in radians
+    radians = np.arctan(slope)
+
+    # Convert radians to degrees
+    angle_in_degrees = np.rad2deg(radians)
+
+    return angle_in_degrees
