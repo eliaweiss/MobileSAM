@@ -16,8 +16,9 @@ class AlignTable_Processor:
         assert tblBox is not None or annotation is not None, "tblBox and annotation cannot both be none"
         self.img_pil = img_pil
         self.annotation = annotation
-        self.mask = None
         self.tblBox = tblBox
+        self.mask = None
+        self.angle = None
         if annotation is not None:
             self.setMaskFromAnnotation(annotation)
             
@@ -72,6 +73,8 @@ class AlignTable_Processor:
         bbox4[:,0] += xBias
         bbox4[:,1] += yBias
         
+        if self.angle is None:
+            return np.intp(bbox4)
         # un-rotate box
         rotated_bbox = np.array([self.rotate_point(pt) for pt in bbox4])
         
@@ -219,8 +222,8 @@ class AlignTable_Processor:
                                                 center=self.center, 
                                                 resample=Image.BILINEAR,fillcolor=(255, 255, 255))
         
-            tbl_patch = np.array(imgRotated)
-            self.tbl_patch = tbl_patch = tbl_patch[b:t, l:r]
+                tbl_patch = np.array(imgRotated)
+                self.tbl_patch = tbl_patch = tbl_patch[b:t, l:r]
             
         tbl_patch_pil = Image.fromarray(tbl_patch)
         return tbl_patch_pil 
