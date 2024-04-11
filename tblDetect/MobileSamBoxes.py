@@ -66,12 +66,9 @@ class MobileSamBoxes:
     
     ################################
     def process(self, img, input_boxes):
-        start = time.time()
         predictor = self.predictor
-
-
         image = np.array(img)
-        print("shape",image.shape)
+        # print("shape",image.shape)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
         if input_boxes is None:
@@ -104,7 +101,6 @@ class MobileSamBoxes:
                 low_res_masks=predictor.model.postprocess_masks(low_res_masks, predictor.input_size, predictor.original_size)
                 sam_mask_pre = (low_res_masks > predictor.model.mask_threshold)*1.0
                 sam_mask.append(sam_mask_pre.squeeze(1))
-        print("------ total time: (s): %s" % round(time.time() - start, 2))
         sam_mask=torch.cat(sam_mask)
         return sam_mask
 

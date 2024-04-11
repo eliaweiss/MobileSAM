@@ -51,7 +51,7 @@ class TableDetect:
         bboxes_scaled = self.rescale_bboxes(outputs['pred_boxes'][0, keep], im.size)   
 
         # Apply NMS to suppress overlapping bounding boxes
-        indices = non_max_suppression(bboxes_scaled, probas, threshold=0.1)
+        indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
 
         # Extract the final boxes after NMS
         bboxes_scaled = [bboxes_scaled[i] for i in indices]                             
