@@ -47,32 +47,22 @@ def plot_results(model, pil_img, prob, boxes):
     plt.show()
         
 #########################################
-def show_anns(anns):
-    if len(anns) == 0:
-        return
-    ax = plt.gca()
-    ax.set_autoscale_on(False)
-    img = np.ones((anns.shape[1], anns.shape[2], 4))
-    # img[:,:,3] = 0
+def plot_annotations(img_pil, anns):
+    imgTmp = np.zeros((anns.shape[1], anns.shape[2], 3), dtype=np.uint8)
     for ann in range(anns.shape[0]):
         m = anns[ann].bool()
         m=m.cpu().numpy()
-        color_mask = np.concatenate([np.random.random(3), [1]])
-        img[m] = color_mask
-        break
-    ax.imshow(img)
+        color_mask = np.int0(np.random.random(3)*255)
+        imgTmp[m] = color_mask
 
-
-#########################################
-def plot_annotations(image, anns):
-    plt.figure(figsize=(10,10))
-    background=np.ones_like(image)*255
-    plt.imshow(background)
-    show_anns(anns)
+    background =  img_pil.convert("RGBA")
+    imgTmp = Image.fromarray(imgTmp).convert("RGBA")
+    pil_img = Image.blend(background, imgTmp, 0.5)            
+    plt.figure(figsize=(16,10))
+    plt.imshow(pil_img)
     plt.axis('off')
     plt.show() 
-    # plt.savefig("{}".format("./out/result.jpg"), bbox_inches='tight', pad_inches = 0.0)         
-    
+
 #########################################
     
 def plot_results_cells(tblStructDetect, tbl_patch, cells, class_to_visualize):
