@@ -3,6 +3,7 @@ import torch
 torch.set_grad_enabled(False);
 
 from transformers import AutoModelForObjectDetection
+from lineVision.LineCvUtils import LineCvUtils
 
 # from transformers import TableTransformerForObjectDetection
 
@@ -44,8 +45,77 @@ class TableDetect:
         probas = outputs['logits'].softmax(-1)[0, :, :-1]
         keep = probas.max(-1).values > 0.1
         probas = probas[keep]
-
+        probas = probas[:, 0]
+        
         # convert boxes from [0; 1] to image scales
         bboxes_scaled = self.rescale_bboxes(outputs['pred_boxes'][0, keep], im.size)   
-        
+
+        # Apply NMS to suppress overlapping bounding boxes
+        indices = non_max_suppression(bboxes_scaled, probas, threshold=0.1)
+
+        # Extract the final boxes after NMS
+        bboxes_scaled = [bboxes_scaled[i] for i in indices]                             
+        probas = [probas[i] for i in indices]
+                
         return probas, bboxes_scaled 
+    
+    
+def non_max_suppression(boxes, scores, threshold):
+    """
+    Perform Non-Maximum Suppression to remove overlapping bounding boxes.
+    
+    Args:
+    - boxes: A list of bounding box coordinates in the format [x_min, y_min, x_max, y_max].
+    - scores: A list of confidence scores corresponding to each bounding box.
+    - threshold: IoU (Intersection over Union) threshold to determine overlapping boxes.
+    
+    Returns:
+    - selected_indices: A list of indices corresponding to the selected bounding boxes.
+    """
+    selected_indices = []
+    
+    # Sort boxes based on their scores in descending order
+    sorted_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+    
+    while sorted_indices:
+        # Select the bounding box with the highest score
+        selected_index = sorted_indices[0]
+        selected_indices.append(selected_index)
+        
+        # Compute IoU between the selected box and other boxes
+        selected_box = boxes[selected_index]
+        other_boxes = [boxes[i] for i in sorted_indices[1:]]
+        ious = [calculate_iou(selected_box, other_box) for other_box in other_boxes]
+        
+        # Remove boxes with IoU greater than the threshold
+        filtered_indices = [i for i, iou in enumerate(ious) if iou <= threshold]
+        sorted_indices = [sorted_indices[i + 1] for i in filtered_indices]
+    
+    return selected_indices
+
+def calculate_iou(box1, box2):
+    """
+    Calculate the Intersection over Union (IoU) between two bounding boxes.
+    
+    Args:
+    - box1, box2: Bounding box coordinates in the format [x_min, y_min, x_max, y_max].
+    
+    Returns:
+    - iou: Intersection over Union (IoU) value.
+    """
+    x1 = max(box1[0], box2[0])
+    y1 = max(box1[1], box2[1])
+    x2 = min(box1[2], box2[2])
+    y2 = min(box1[3], box2[3])
+    
+    intersection = max(0, x2 - x1) * max(0, y2 - y1)
+    
+    area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
+    area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
+    
+    union = area1 + area2 - intersection
+    
+    iou = intersection / union if union > 0 else 0
+    
+    return iou
+    
