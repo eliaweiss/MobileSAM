@@ -219,8 +219,8 @@ class AlignTable_Processor:
             return 0
         # Calculate standard deviation using numpy.std
         standard_deviation = np.std(slopes)
-        # if standard_deviation > 0.1:
-        #     return 0
+        if standard_deviation > 0.045:
+            return 0
         
         mean = np.mean(slopes)
         print( "mean", mean, "std",standard_deviation, "slopes[0]",slopes[0])
