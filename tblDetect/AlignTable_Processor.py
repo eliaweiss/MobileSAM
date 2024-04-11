@@ -209,11 +209,11 @@ class AlignTable_Processor:
     ################################################################
     def getRotateAngleFromLines(self, lines):
         slopes = []
-        for line in lines:
+        for line in lines[:2]:
             if len(line) > 6:
                 slope = self.find_approximate_line(line)
-                if abs(slope) < 0.001:
-                    return 0
+                # if abs(slope) < 0.001:
+                #     return 0
                 slopes.append(slope)
         if len(slopes) == 0:
             return 0
