@@ -121,10 +121,13 @@ class AlignTable_Processor:
         pixels = []
         for ls in line:
             left, bottom, right, top = ls.boundingBox
-            for y in range(bottom, top):
-                for x in range(left, right):
-                    if ls.patch is not None and ls.patch[y-bottom, x-left] > 0:
-                        pixels.append([x,y])
+            if ls.patch is not None:
+                for y in range(bottom, top):
+                    for x in range(left, right):
+                        if ls.patch[y-bottom, x-left] > 0:
+                            pixels.append([x,y])
+            else: 
+                pixels.append([left,bottom])
         return pixels    
     
     ################################################################
@@ -189,11 +192,11 @@ class AlignTable_Processor:
     def getAlignTable(self):
         l,b,r,t = self.getCropBBox()
         img = np.array(self.img_pil)
-        tbl_patch_tmp = img[b:t, l:r]
-        lines = self.findLines(tbl_patch_tmp)
+        tbl_patch = img[b:t, l:r]
+        lines = self.findLines(tbl_patch)
         if len(lines) > 0:
             line = lines[0]
-            if len(line) > 5:
+            if len(line) > 4:
                 slope = self.find_approximate_line(line)
                 angle = self.calculate_angle(slope)
                 # rotate
@@ -201,8 +204,9 @@ class AlignTable_Processor:
                                                 center=self.center, 
                                                 resample=Image.BILINEAR,fillcolor=(255, 255, 255))
         
-        tbl_patch = np.array(imgRotated)
-        self.tbl_patch = tbl_patch = tbl_patch[b:t, l:r]
+            tbl_patch = np.array(imgRotated)
+            self.tbl_patch = tbl_patch = tbl_patch[b:t, l:r]
+            
         tbl_patch_pil = Image.fromarray(tbl_patch)
         return tbl_patch_pil 
 
