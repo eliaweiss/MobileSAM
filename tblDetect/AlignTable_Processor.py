@@ -207,16 +207,37 @@ class AlignTable_Processor:
         return slope
         
     ################################################################
+    def getRotateAngleFromLines(self, lines):
+        slopes = []
+        for line in lines:
+            if len(line) > 6:
+                slope = self.find_approximate_line(line)
+                if abs(slope) < 0.001:
+                    return 0
+                slopes.append(slope)
+        if len(slopes) == 0:
+            return 0
+        # Calculate standard deviation using numpy.std
+        standard_deviation = np.std(slopes)
+        # if standard_deviation > 0.1:
+        #     return 0
+        
+        mean = np.mean(slopes)
+        print( "mean", mean, "std",standard_deviation, "slopes[0]",slopes[0])
+        # slopes_filtered = [v for v in slopes if abs(v)-mean <=standard_deviation]
+        # mean = np.mean(slopes_filtered)
+        angle = self.calculate_angle(mean)
+        return angle
+        
+    ################################################################
     def getAlignTable(self):
         l,b,r,t = self.getCropBBox()
         img = np.array(self.img_pil)
         tbl_patch = img[b:t, l:r]
         lines = self.findLines(tbl_patch)
         if len(lines) > 0:
-            line = lines[0]
-            if len(line) > 4:
-                slope = self.find_approximate_line(line)
-                angle = self.calculate_angle(slope)
+            self.angle = angle = self.getRotateAngleFromLines(lines)
+            if angle != 0:
                 # rotate
                 imgRotated =  self.img_pil.rotate(angle, 
                                                 center=self.center, 
