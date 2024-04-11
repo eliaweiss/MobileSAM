@@ -214,7 +214,7 @@ class AlignTable_Processor:
                 slope = self.find_approximate_line(line)
                 # if abs(slope) < 0.001:
                 #     return 0
-                slopes.append(slope)
+                slopes.extend(np.repeat(slope, len(line)).tolist())
         if len(slopes) == 0:
             return 0
         # Calculate standard deviation using numpy.std
@@ -223,8 +223,8 @@ class AlignTable_Processor:
             return 0
         
         mean = np.mean(slopes)
-        print( "mean", mean, "std",standard_deviation, "slopes[0]",slopes[0])
-        # slopes_filtered = [v for v in slopes if abs(v)-mean <=standard_deviation]
+        # print( "mean", mean, "std",standard_deviation, "slopes[0]",slopes[0])
+        # slopes_filtered = [v for v in slopes if abs(v-mean) <=standard_deviation]
         # mean = np.mean(slopes_filtered)
         angle = self.calculate_angle(mean)
         return angle
