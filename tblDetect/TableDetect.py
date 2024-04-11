@@ -42,7 +42,7 @@ class TableDetect:
         # propagate through the model
         outputs = self.model(img)
         probas = outputs['logits'].softmax(-1)[0, :, :-1]
-        keep = probas.max(-1).values > 0.5
+        keep = probas.max(-1).values > 0.1
         probas = probas[keep]
 
         # convert boxes from [0; 1] to image scales

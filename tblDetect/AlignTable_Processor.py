@@ -120,7 +120,10 @@ class AlignTable_Processor:
             )   
         cvProcessor.process()     
         self.lines = lines = cvProcessor.finalLine_Processor.getLines()
+        lines = [l for l in lines if l.isHorizontal()]
         lines.sort(key=lambda l: -len(l)) 
+        
+        self.lines = lines
         return lines     
     ################################################################
     def getLinePixels(self, line: LineCv_Line):
