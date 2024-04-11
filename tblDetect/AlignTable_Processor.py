@@ -5,15 +5,21 @@ from PIL import Image
 import math
 from lineVision.lineCv.processor.Cv_Line_Processor import Cv_Line_Processor
 from lineVision.lineCv.line.LineCv_Line import LineCv_Line
+from lineVision.LineCvUtils import LineCvUtils
 
 from lineVision.DocumentBbZv import DocumentBBZv
 from typing import List
 
 class AlignTable_Processor:
     ################################################################
-    def __init__(self, img_pil, annotation):
+    def __init__(self, img_pil, annotation=None, tblBox=None):
+        assert tblBox is not None or annotation is not None, "tblBox and annotation cannot both be none"
         self.img_pil = img_pil
-        self.setMaskFromAnnotation(annotation)
+        self.annotation = annotation
+        self.mask = None
+        self.tblBox = tblBox
+        if annotation is not None:
+            self.setMaskFromAnnotation(annotation)
             
     ################################################################
     def setMaskFromAnnotation(self, annotation):
@@ -132,11 +138,17 @@ class AlignTable_Processor:
     
     ################################################################
     def getCropBBox(self):
+
         contour = self.getTblContour()
         bRect = cv2.boundingRect(contour)
         l,b,w,h = bRect
         r,t = l+w,b+h   
-        self.cropBBox = self.boundToImgSize(l,b,r,t)
+        intersect = LineCvUtils.calcBBIntersection((l,b,r,t), self.tblBox)
+        if intersect[0] >= 0.9:
+            self.cropBBox = self.tblBox
+        else:
+            self.cropBBox = self.boundToImgSize(l,b,r,t)
+
         self.center = (l+r)//2,(b+t)//2
         return self.cropBBox     
         
@@ -213,21 +225,3 @@ class AlignTable_Processor:
 
 
    
-    # ################################################################
-    # def getAlignTable(self):
-    #     contour = self.getTblContour()
-    #     center, (w,h), angle = cv2.minAreaRect(contour)
-    #     self.minAreaRect = center, (w,h), angle
-    #     minAreaBBox = np.int0(cv2.boxPoints(self.minAreaRect))
-    #     bRect = cv2.boundingRect(minAreaBBox)
-    #     x,y,w,h = bRect
-    #     x1,y1 = x+w,y+h   
-    #     self.cropBBox = x,y,x1,y1 = self.boundToImgSize(x,y,x1,y1)
-    #     if angle > 45:
-    #         angle = angle-90  
-    #     imgRotated =  self.img.rotate(angle, center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
-    #     tbl_patch = np.array(imgRotated)
-    #     tbl_patch = tbl_patch[y:y1, x:x1]
-    #     tbl_patch_pil = Image.fromarray(tbl_patch)
-    #     return tbl_patch_pil            
-            
