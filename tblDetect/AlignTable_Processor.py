@@ -3,19 +3,23 @@ import cv2
 import numpy as np
 from PIL import Image
 import math
+from lineVision.lineCv.processor.Cv_Line_Processor import Cv_Line_Processor
+from lineVision.lineCv.line.LineCv_Line import LineCv_Line
+
+from lineVision.DocumentBbZv import DocumentBBZv
+from typing import List
 
 class AlignTable_Processor:
     ################################################################
-    def __init__(self, img, annotation=None):
-        self.img = img
-        if annotation is not None:
-            self.setMaskFromAnnotation(annotation)
+    def __init__(self, img_pil, annotation):
+        self.img_pil = img_pil
+        self.setMaskFromAnnotation(annotation)
             
     ################################################################
     def setMaskFromAnnotation(self, annotation):
         m = annotation.bool()
         m=m.cpu().numpy()
-        w,h = self.img.size
+        w,h = self.img_pil.size
         mask = np.zeros((h, w, 1), np.uint8)
         mask[m] = 255
         self.mask = mask
@@ -23,31 +27,13 @@ class AlignTable_Processor:
     
     ################################################################
     def boundToImgSize(self,x,y,x1,y1):
-        w,h = self.img.size
+        w,h = self.img_pil.size
         x = max(x,0)
         y = max(y,0)
         x1 = min(x1,w-1)
         y1 = min(y1,h-1)
         return x,y,x1,y1        
-        
-    ################################################################
-    def getAlignTable(self):
-        contour = self.getTblContour()
-        center, (w,h), angle = cv2.minAreaRect(contour)
-        self.minAreaRect = center, (w,h), angle
-        minAreaBBox = np.int0(cv2.boxPoints(self.minAreaRect))
-        bRect = cv2.boundingRect(minAreaBBox)
-        x,y,w,h = bRect
-        x1,y1 = x+w,y+h   
-        self.cropBBox = x,y,x1,y1 = self.boundToImgSize(x,y,x1,y1)
-        if angle > 45:
-            angle = angle-90  
-        imgRotated =  self.img.rotate(angle, center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
-        tbl_patch = np.array(imgRotated)
-        tbl_patch = tbl_patch[y:y1, x:x1]
-        tbl_patch_pil = Image.fromarray(tbl_patch)
-        return tbl_patch_pil            
-        
+     
     ################################################################
     def getTblContour(self):
         contours, _ = cv2.findContours(self.mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -100,11 +86,9 @@ class AlignTable_Processor:
             A tuple (x, y) representing the new location of the point.
         """
         if center is None:
-            center,_,_ = self.minAreaRect
+            center = self.center
         if angle is None:
-            _,_,angle = self.minAreaRect
-            if angle > 45:
-                angle = angle-90
+            angle = self.angle
 
         # Convert angle to radians
         radians = math.radians(angle)
@@ -120,3 +104,126 @@ class AlignTable_Processor:
         rotated_point = (int(new_x + center[0]), int(new_y + center[1]))
 
         return rotated_point                
+    
+   
+    ################################################################
+    def findLines(self, img_patch):
+        documentBBZv = DocumentBBZv(img_patch)
+        self.cvProcessor = cvProcessor = Cv_Line_Processor(
+            documentBBZv=documentBBZv,
+            )   
+        cvProcessor.process()     
+        self.lines = lines = cvProcessor.finalLine_Processor.getLines()
+        lines.sort(key=lambda l: -len(l)) 
+        return lines     
+    ################################################################
+    def getLinePixels(self, line: LineCv_Line):
+        pixels = []
+        for ls in line:
+            left, bottom, right, top = ls.boundingBox
+            for y in range(bottom, top):
+                for x in range(left, right):
+                    if ls.patch is not None and ls.patch[y-bottom, x-left] > 0:
+                        pixels.append([x,y])
+        return pixels    
+    
+    ################################################################
+    def getCropBBox(self):
+        contour = self.getTblContour()
+        bRect = cv2.boundingRect(contour)
+        l,b,w,h = bRect
+        r,t = l+w,b+h   
+        self.cropBBox = self.boundToImgSize(l,b,r,t)
+        self.center = (l+r)//2,(b+t)//2
+        return self.cropBBox     
+        
+    ################################################################
+    def find_approximate_line_from_pixels(self,points_in_line):
+        """
+        Finds the approximate line using linear regression for a given set of points.
+
+        Args:
+            points_inside: A list of tuples representing the points to fit the line to.
+
+        Returns:
+            A tuple containing the slope and intercept of the estimated line.
+        """
+
+        x_vals = [point[0] for point in points_in_line]
+        y_vals = [point[1] for point in points_in_line]
+
+        # Use numpy's polyfit function for linear regression
+        slope, intercept = np.polyfit(x_vals, y_vals, 1)
+        self.slope = slope
+        self.intercept = intercept
+        return slope, intercept    
+    ################################################################
+        
+    def calculate_angle(self, slope):
+        """
+        Calculates the angle of the line relative to the x-axis in degrees.
+
+        Args:
+        slope: The slope of the estimated line.
+
+        Returns:
+        The angle of the line in degrees.
+        """
+
+        # Use arctangent (atan) to find the angle in radians
+        radians = np.arctan(slope)
+
+        # Convert radians to degrees
+        self.angle = angle_in_degrees = np.rad2deg(radians)
+
+        return angle_in_degrees    
+    
+    ################################################################
+
+    def find_approximate_line(self, line):
+        linePixels = self.getLinePixels(line)
+        slope, _ = self.find_approximate_line_from_pixels(linePixels)
+        return slope
+        
+    ################################################################
+    def getAlignTable(self):
+        l,b,r,t = self.getCropBBox()
+        img = np.array(self.img_pil)
+        tbl_patch_tmp = img[b:t, l:r]
+        lines = self.findLines(tbl_patch_tmp)
+        if len(lines) > 0:
+            line = lines[0]
+            if len(line) > 5:
+                slope = self.find_approximate_line(line)
+                angle = self.calculate_angle(slope)
+                # rotate
+                imgRotated =  self.img_pil.rotate(angle, 
+                                                center=self.center, 
+                                                resample=Image.BILINEAR,fillcolor=(255, 255, 255))
+        
+        tbl_patch = np.array(imgRotated)
+        self.tbl_patch = tbl_patch = tbl_patch[b:t, l:r]
+        tbl_patch_pil = Image.fromarray(tbl_patch)
+        return tbl_patch_pil 
+
+
+
+   
+    # ################################################################
+    # def getAlignTable(self):
+    #     contour = self.getTblContour()
+    #     center, (w,h), angle = cv2.minAreaRect(contour)
+    #     self.minAreaRect = center, (w,h), angle
+    #     minAreaBBox = np.int0(cv2.boxPoints(self.minAreaRect))
+    #     bRect = cv2.boundingRect(minAreaBBox)
+    #     x,y,w,h = bRect
+    #     x1,y1 = x+w,y+h   
+    #     self.cropBBox = x,y,x1,y1 = self.boundToImgSize(x,y,x1,y1)
+    #     if angle > 45:
+    #         angle = angle-90  
+    #     imgRotated =  self.img.rotate(angle, center=center, resample=Image.BILINEAR,fillcolor=(255, 255, 255))
+    #     tbl_patch = np.array(imgRotated)
+    #     tbl_patch = tbl_patch[y:y1, x:x1]
+    #     tbl_patch_pil = Image.fromarray(tbl_patch)
+    #     return tbl_patch_pil            
+            
