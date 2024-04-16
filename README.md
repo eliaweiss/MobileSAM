@@ -116,8 +116,7 @@ Once installed MobileSAM, you can run demo on your local PC or check out our [Hu
 It requires latest version of [gradio](https://gradio.app).
 
 ```
-cd app
-python app.py
+python appMain.py
 ```
 
 ## <a name="GettingStarted"></a>Getting Started
