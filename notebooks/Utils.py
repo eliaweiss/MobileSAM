@@ -34,12 +34,10 @@ def plot_results(model, pil_img, prob, boxes):
     plt.imshow(pil_img)
     ax = plt.gca()
     colors = COLORS * 100
-    for p, (xmin, ymin, xmax, ymax), c in zip(prob, boxes.tolist(), colors):
+    for score, (xmin, ymin, xmax, ymax), c in zip(prob, boxes, colors):
         ax.add_patch(plt.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin,
                                 fill=False, color=c, linewidth=3))
-        cl = p.argmax().item()
-        score = p[cl]
-        text = f'{model.config.id2label[cl]}: {score:0.2f}'
+        text = f'{score:0.2f}'
         
         ax.text(xmin, ymin, text, fontsize=15,
                 bbox=dict(facecolor='yellow', alpha=0.5))

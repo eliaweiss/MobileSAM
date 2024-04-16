@@ -54,8 +54,8 @@ class TableDetect:
         indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
 
         # Extract the final boxes after NMS
-        bboxes_scaled = [bboxes_scaled[i] for i in indices]                             
-        probas = [probas[i] for i in indices]
+        bboxes_scaled = [bboxes_scaled[i].tolist() for i in indices]                             
+        probas = [probas[i].tolist() for i in indices]
                 
         return probas, bboxes_scaled 
     
