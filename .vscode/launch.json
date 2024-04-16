@@ -5,12 +5,34 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "MobileSAMv2/Inference.py",
+            "name": "svm",
             "type": "debugpy",
             "request": "launch",
-            "program": "MobileSAMv2/Inference.py",
+            "program": "svmMain.py",
             "console": "integratedTerminal",
-        },
+        },   
+        {
+            "name": "Inference_withTblDet",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "MobileSAMv2/Inference_withTblDet.py",
+            "console": "integratedTerminal",
+        },        
+        {
+            "name": "Inference boxes.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "MobileSAMv2/Inference_withBoxes.py",
+            "console": "integratedTerminal",
+        },        
+        // {
+        //     // note: require yolo for box predication
+        //     "name": "MobileSAMv2/Inference.py",
+        //     "type": "debugpy",
+        //     "request": "launch",
+        //     "program": "MobileSAMv2/Inference_withYolo.py",
+        //     "console": "integratedTerminal",
+        // },
         {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
