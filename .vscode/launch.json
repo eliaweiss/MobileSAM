@@ -5,6 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "flaskApp.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "0",
+                // "UPLOAD_FOLDER": "/Users/eliaweiss/tmpUpload/",
+                // "UPLOAD_FOLDER": "/home/ec2-user/upload/",
+                "IS_LOCAL": "1"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload",
+                "--host=0.0.0.0",
+                "--port=5001"
+            ],
+            "jinja": true
+        },
+        {
             "name": "svm",
             "type": "debugpy",
             "request": "launch",
