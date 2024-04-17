@@ -6,6 +6,7 @@ import math
 from lineVision.lineCv.processor.Cv_Line_Processor import Cv_Line_Processor
 from lineVision.lineCv.line.LineCv_Line import LineCv_Line
 from lineVision.LineCvUtils import LineCvUtils
+from lineVision.DocZvRoot import DocZvRoot
 
 from lineVision.DocumentBbZv import DocumentBBZv
 from typing import List
@@ -118,9 +119,8 @@ class AlignTable_Processor:
     ################################################################
     def findLines(self, img_patch):
         documentBBZv = DocumentBBZv(img_patch)
-        self.cvProcessor = cvProcessor = Cv_Line_Processor(
-            documentBBZv=documentBBZv,
-            )   
+        docZv = DocZvRoot(documentBBZv)
+        self.cvProcessor = cvProcessor = Cv_Line_Processor(docZv)
         cvProcessor.process()     
         self.lines = lines = cvProcessor.finalLine_Processor.getLines()
         lines = [l for l in lines if l.isHorizontal()]

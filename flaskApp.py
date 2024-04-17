@@ -27,6 +27,7 @@ from flaskUtil.FlaskUtil import FlaskUtil
 from tblDetect.AlignTable_Processor import AlignTable_Processor
 from tblDetect.MobileSamBoxes import MobileSamBoxes
 from tblDetect.TableDetect import TableDetect
+from tblDetect.TblStructureDetect import TblStructureDetect
 
 
 class FileRedirector:
@@ -54,6 +55,7 @@ CORS(app)
 # global
 sam = MobileSamBoxes()
 tblDec = TableDetect()
+tblStructDetect = TblStructureDetect()       
 
 @app.route('/')
 def home():
@@ -64,9 +66,7 @@ def home():
 def detectTbl():  
     # Assuming you're receiving JSON data
     request_data = request.json
-    
-    extractCtr = request_data.get('extractCtr') 
-    
+
     # Accessing the value of the 'tst' key in the JSON data
     base64_string = request_data.get('image')
     img_pil, img = FlaskUtil.base64_to_pil(base64_string)
@@ -80,17 +80,25 @@ def detectTbl():
         "detectTbl": [],
     }
     
-    if extractCtr and len(boxes):
-        # find table mask
+    extractTblStructure = request_data.get('extractTblStructure')
+    if request_data.get('extractCtr') or extractTblStructure:
         ctrList = []
+        tableCells = []
         anns = sam.process(img_pil_resize,boxes)
         for ann, box, prob in zip(anns, boxes,probas):
             alignTable_processor = AlignTable_Processor(img_pil_resize, annotation=ann, tblBox=box)
             ctr = alignTable_processor.getTblApproxCtr()
             ctr= ctr.squeeze()
             ctrList.append(ctr)
+            tbl_patch_pil = alignTable_processor.getAlignTable()
+            cells = tblStructDetect.detectTableStructure(tbl_patch_pil)
+            rotated_cells =  alignTable_processor.unRotateAllCell(cells)   
+            tableCells.append(rotated_cells)         
     else:
         ctrList = boxes
+        
+    if request_data.get('extractCtr'):
+                
             
         
     
