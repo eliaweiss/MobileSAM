@@ -24,6 +24,7 @@ import boto3
 import sys
 
 from flaskUtil.FlaskUtil import FlaskUtil
+from notebooks.Utils import applyRotatedResult
 from tblDetect.AlignTable_Processor import AlignTable_Processor
 from tblDetect.MobileSamBoxes import MobileSamBoxes
 from tblDetect.TableDetect import TableDetect
@@ -148,14 +149,14 @@ def detectTblStructure():
             
     alignTable_processor = AlignTable_Processor(img_pil, tblBox=box)
 
-    tableCells = []
     tbl_patch_pil = alignTable_processor.getAlignTable()
     cells = tblStructDetect.detectTableStructure(tbl_patch_pil)
     rotated_cells =  alignTable_processor.unRotateAllCell(cells)   
-    tableCells.append(rotated_cells)         
+    # applyRotatedResult(img, rotated_cells)
+    # cv2.imwrite("img_cell.jpg", img)
             
     res = {
-        "tableCells": tableCells,
+        "tableCells": rotated_cells,
     }        
     
     print("------ detectTableStructure time: (s): %s" % round(time.time() - start, 2))
