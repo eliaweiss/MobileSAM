@@ -62,6 +62,10 @@ def home():
     return "Hello, World!"
 
 
+################################################################
+################################################################
+
+
 @app.route("/detectTbl", methods=["POST", "GET", "OPTIONS"])
 def detectTbl():  
     # Assuming you're receiving JSON data
@@ -71,24 +75,20 @@ def detectTbl():
     base64_string = request_data.get('image')
     img_pil, img = FlaskUtil.base64_to_pil(base64_string)
     origSize = img_pil.size
-    img_pil_resize = img_pil.copy()
     # Resize the image
-    img_pil_resize.thumbnail((1000, 1000)) 
-    print("rescale",img_pil_resize.size, "origSize",origSize)   
-    probas, boxes = tblDec.detectTables(img_pil_resize) # , origSize=origSize
-    res = {
-        "detectTbl": [],
-    }
+    img_pil.thumbnail((1000, 1000)) 
+    print("rescale",img_pil.size, "origSize",origSize)   
+    probas, boxes = tblDec.detectTables(img_pil) # , origSize=origSize
+
     
     extractTblStructure = request_data.get('extractTblStructure')
     if request_data.get('extractCtr') or extractTblStructure:
         ctrList = []
         tableCells = []
-        anns = sam.process(img_pil_resize,boxes)
+        anns = sam.process(img_pil,boxes)
         for ann, box, prob in zip(anns, boxes,probas):
-            alignTable_processor = AlignTable_Processor(img_pil_resize, annotation=ann, tblBox=box)
+            alignTable_processor = AlignTable_Processor(img_pil, annotation=ann, tblBox=box)
             ctr = alignTable_processor.getTblApproxCtr()
-            ctr= ctr.squeeze()
             ctrList.append(ctr)
             if extractTblStructure:
                 tbl_patch_pil = alignTable_processor.getAlignTable()
@@ -101,15 +101,14 @@ def detectTbl():
         
                 
             
-        
+    res = {
+        "detectTbl": [],
+    }        
     
     for score,bb,ctr,cells in list(zip(probas, boxes, ctrList,tableCells)):
-        ctr = FlaskUtil.resizePoints(ctr, img_pil_resize.size, img_pil.size)
-        # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4)  # Green bounding box with thickness 2
-        # cv2.imwrite("img_ctr.jpg",img)
-        
+        ctr = FlaskUtil.resizePoints(ctr, img_pil.size, origSize)
         ctr = np.intp(ctr).tolist()
-        bb = FlaskUtil.resizePoints(np.array(bb).reshape(2,2), img_pil_resize.size, img_pil.size)
+        bb = FlaskUtil.resizePoints(np.array(bb).reshape(2,2), img_pil.size, origSize)
         bb = np.intp(bb.flatten()).tolist()
         res['detectTbl'].append({
             "score": round(score, 2),
@@ -118,10 +117,51 @@ def detectTbl():
             "cells": cells,
         })
     
-    # Return a response if needed
     return json.dumps(res)
 
+        # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4)  # Green bounding box with thickness 2
+        # cv2.imwrite("img_ctr.jpg",img)
+################################################################
+################################################################
 
+
+@app.route("/segment", methods=["POST", "GET", "OPTIONS"])
+def segment():  
+    # Assuming you're receiving JSON data
+    request_data = request.json
+
+    # Accessing the value of the 'tst' key in the JSON data
+    base64_string = request_data.get('image')
+    img_pil, img = FlaskUtil.base64_to_pil(base64_string)
+    origSize = img_pil.size
+    # Resize the image
+    img_pil.thumbnail((1000, 1000)) 
+    print("rescale",img_pil.size, "origSize",origSize)   
+    
+    boxes = request_data.get('boxes' )
+    if boxes is None:
+        w,h = img_pil.size
+        boxes = [[0,0,w,h]]
+    else:
+        boxes = FlaskUtil.resizePoints(np.array(boxes).reshape(2,2), origSize, img_pil.size)
+        boxes = np.intp(boxes.flatten()).tolist()        
+    
+
+    ctrList = []
+    anns = sam.process(img_pil,boxes)
+    for ann, box in zip(anns, boxes):
+        alignTable_processor = AlignTable_Processor(img_pil, annotation=ann, tblBox=box)
+        ctr = alignTable_processor.getApproxCtr()
+        ctr = FlaskUtil.resizePoints(ctr, img_pil.size, origSize)
+        # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4)  # Green bounding box with thickness 2
+        # cv2.imwrite("img_ctr.jpg",img)        
+        ctr = np.intp(ctr).tolist()
+        ctrList.append(ctr)
+        
+    res = {
+        "ctrList": ctrList,
+    }
+    return json.dumps(res)
 
 if __name__ == '__main__':
     app.run(debug=True)

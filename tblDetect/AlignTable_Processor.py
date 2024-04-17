@@ -43,7 +43,7 @@ class AlignTable_Processor:
         return x,y,x1,y1        
      
     ################################################################
-    def getTblContour(self):
+    def getMaxContour(self):
         contours, _ = cv2.findContours(self.mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         contour = None
         rectArea = None
@@ -145,7 +145,7 @@ class AlignTable_Processor:
     ################################################################
     def getCropBBox(self):
 
-        contour = self.getTblContour()
+        contour = self.getMaxContour()
         bRect = cv2.boundingRect(contour)
         l,b,w,h = bRect
         r,t = l+w,b+h   
@@ -160,7 +160,7 @@ class AlignTable_Processor:
     ################################################################
     def getTblApproxCtr(self):
 
-        contour = self.getTblContour()
+        contour = self.getMaxContour()
         bRect = cv2.boundingRect(contour)
         l,b,w,h = bRect
         r,t = l+w,b+h   
@@ -174,6 +174,20 @@ class AlignTable_Processor:
 
             # Approximate the contour with a polygon
             approx = cv2.approxPolyDP(contour, epsilon, True)
+            approx = approx.squeeze()
+            
+        return approx     
+    ################################################################
+    def getApproxCtr(self):
+        contour = self.getMaxContour()
+
+        perimeter = cv2.arcLength(contour, True)
+        # Set the epsilon parameter for approxPolyDP
+        epsilon = 0.001 * perimeter
+
+        # Approximate the contour with a polygon
+        approx = cv2.approxPolyDP(contour, epsilon, True)
+        approx = approx.squeeze()
             
         return approx     
         
