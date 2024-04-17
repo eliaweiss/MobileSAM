@@ -68,6 +68,8 @@ def home():
 
 @app.route("/detectTbl", methods=["POST", "GET", "OPTIONS"])
 def detectTbl():  
+    start = time.time()
+    
     # Assuming you're receiving JSON data
     request_data = request.json
 
@@ -98,8 +100,6 @@ def detectTbl():
     else:
         ctrList = boxes
         tableCells = np.empty((len(boxes), 0), dtype=int)
-        
-                
             
     res = {
         "detectTbl": [],
@@ -117,16 +117,59 @@ def detectTbl():
             "cells": cells,
         })
     
+    print("------ detectTbl time: (s): %s" % round(time.time() - start, 2))
+    
     return json.dumps(res)
 
         # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4)  # Green bounding box with thickness 2
         # cv2.imwrite("img_ctr.jpg",img)
+
+
+################################################################
+################################################################
+
+
+@app.route("/detectTblStructure", methods=["POST", "GET", "OPTIONS"])
+def detectTblStructure():  
+    start = time.time()
+    
+    # Assuming you're receiving JSON data
+    request_data = request.json
+
+    # Accessing the value of the 'tst' key in the JSON data
+    base64_string = request_data.get('image')
+    img_pil, img = FlaskUtil.base64_to_pil(base64_string)
+    
+    box = request_data.get('box' )
+    if box is None:
+        w,h = img_pil.size
+        box = [0,0,w,h]
+  
+            
+    alignTable_processor = AlignTable_Processor(img_pil, tblBox=box)
+
+    tableCells = []
+    tbl_patch_pil = alignTable_processor.getAlignTable()
+    cells = tblStructDetect.detectTableStructure(tbl_patch_pil)
+    rotated_cells =  alignTable_processor.unRotateAllCell(cells)   
+    tableCells.append(rotated_cells)         
+            
+    res = {
+        "tableCells": tableCells,
+    }        
+    
+    print("------ detectTableStructure time: (s): %s" % round(time.time() - start, 2))
+    
+    return json.dumps(res)
+
 ################################################################
 ################################################################
 
 
 @app.route("/segment", methods=["POST", "GET", "OPTIONS"])
 def segment():  
+    start = time.time()
+ 
     # Assuming you're receiving JSON data
     request_data = request.json
 
@@ -157,6 +200,8 @@ def segment():
         # cv2.imwrite("img_ctr.jpg",img)        
         ctr = np.intp(ctr).tolist()
         ctrList.append(ctr)
+        
+    print("------ segment time: (s): %s" % round(time.time() - start, 2))
         
     res = {
         "ctrList": ctrList,

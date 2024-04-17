@@ -144,17 +144,20 @@ class AlignTable_Processor:
     
     ################################################################
     def getCropBBox(self):
-
-        contour = self.getMaxContour()
-        bRect = cv2.boundingRect(contour)
-        l,b,w,h = bRect
-        r,t = l+w,b+h   
-        intersect = LineCvUtils.calcBBIntersection((l,b,r,t), self.tblBox)
-        if intersect[0] >= 0.9:
-            self.cropBBox = self.tblBox
+        if self.mask is None: 
+            self.cropBBox = self.tblBox 
         else:
-            self.cropBBox = self.boundToImgSize(l,b,r,t)
-
+            contour = self.getMaxContour()
+            bRect = cv2.boundingRect(contour)
+            l,b,w,h = bRect
+            r,t = l+w,b+h   
+            intersect = LineCvUtils.calcBBIntersection((l,b,r,t), self.tblBox)
+            if intersect[0] >= 0.9:
+                self.cropBBox = self.tblBox
+            else:
+                self.cropBBox = self.boundToImgSize(l,b,r,t)
+                
+        l,b,r,t = self.cropBBox
         self.center = (l+r)//2,(b+t)//2
         return self.cropBBox     
     ################################################################
