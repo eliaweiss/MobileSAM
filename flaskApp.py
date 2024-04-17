@@ -96,7 +96,12 @@ def detectTbl():
             if extractTblStructure:
                 tbl_patch_pil = alignTable_processor.getAlignTable()
                 cells = tblStructDetect.detectTableStructure(tbl_patch_pil)
-                rotated_cells =  alignTable_processor.unRotateAllCell(cells)   
+                rotated_cells =  alignTable_processor.unRotateAllCell(cells)  
+                
+                FlaskUtil.resizeRotatedCells(rotated_cells, img_pil.size, origSize)
+                                        
+                applyRotatedResult(img, rotated_cells)
+                cv2.imwrite("img_cell.jpg", img)                 
                 tableCells.append(rotated_cells)         
     else:
         ctrList = boxes

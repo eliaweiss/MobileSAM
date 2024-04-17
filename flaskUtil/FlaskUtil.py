@@ -8,6 +8,16 @@ from PIL import ExifTags, Image
 class FlaskUtil:
 
     ################################
+
+    def resizeRotatedCells(rotated_cells, from_WxH, to_WxH):
+        for cell in rotated_cells:
+            bbox = cell['bbox']
+            bbox = FlaskUtil.resizePoints(np.array(bbox), from_WxH, to_WxH)
+            bbox = np.intp(bbox).tolist()
+            cell['bbox'] = bbox
+            
+        return rotated_cells
+
     def base64_to_cv2(base64_string):
         # Decode base64 string to bytes
         image_bytes = base64.b64decode(base64_string)
@@ -29,10 +39,10 @@ class FlaskUtil:
 
     ##########################################
 
-    def resizePoints(contour, resized_WxH, orig_WxH):
+    def resizePoints(contour, from_WxH, to_WxH):
 
-        orig_W, orig_H = orig_WxH
-        resized_W, resized_H = resized_WxH
+        orig_W, orig_H = to_WxH
+        resized_W, resized_H = from_WxH
 
         # Calculate scale factors
         scale_x = orig_W / resized_W
