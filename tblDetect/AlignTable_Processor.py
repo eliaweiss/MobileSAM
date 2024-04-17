@@ -165,12 +165,12 @@ class AlignTable_Processor:
         l,b,w,h = bRect
         r,t = l+w,b+h   
         intersect = LineCvUtils.calcBBIntersection((l,b,r,t), self.tblBox)
-        if intersect[0] >= 0.9:
+        if intersect[0] >= 1:
             approx = self.tblBox
         else:
             perimeter = cv2.arcLength(contour, True)
             # Set the epsilon parameter for approxPolyDP
-            epsilon = 0.005 * perimeter
+            epsilon = 0.001 * perimeter
 
             # Approximate the contour with a polygon
             approx = cv2.approxPolyDP(contour, epsilon, True)

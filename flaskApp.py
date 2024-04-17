@@ -69,13 +69,13 @@ def detectTbl():
     
     # Accessing the value of the 'tst' key in the JSON data
     base64_string = request_data.get('image')
-    img_pil = FlaskUtil.base64_to_pil(base64_string)
+    img_pil, img = FlaskUtil.base64_to_pil(base64_string)
     origSize = img_pil.size
     img_pil_resize = img_pil.copy()
     # Resize the image
     img_pil_resize.thumbnail((1000, 1000)) 
     print("rescale",img_pil_resize.size, "origSize",origSize)   
-    probas, boxes = tblDec.detectTables(img_pil_resize, origSize=origSize)  
+    probas, boxes = tblDec.detectTables(img_pil_resize) # , origSize=origSize
     res = {
         "detectTbl": [],
     }
@@ -83,18 +83,25 @@ def detectTbl():
     if extractCtr and len(boxes):
         # find table mask
         ctrList = []
-        anns = sam.process(img_pil,boxes)
+        anns = sam.process(img_pil_resize,boxes)
         for ann, box, prob in zip(anns, boxes,probas):
-            alignTable_processor = AlignTable_Processor(img_pil, annotation=ann, tblBox=box)
+            alignTable_processor = AlignTable_Processor(img_pil_resize, annotation=ann, tblBox=box)
             ctr = alignTable_processor.getTblApproxCtr()
-            ctrList.append(np.intp(ctr).tolist())
+            ctr= ctr.squeeze()
+            ctrList.append(ctr)
     else:
         ctrList = boxes
             
         
     
     for score,bb,ctr in list(zip(probas, boxes, ctrList)):
-        bb = np.intp(bb).tolist()
+        ctr = FlaskUtil.resizePoints(ctr, img_pil_resize.size, img_pil.size)
+        # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4)  # Green bounding box with thickness 2
+        # cv2.imwrite("img_ctr.jpg",img)
+        
+        ctr = np.intp(ctr).tolist()
+        bb = FlaskUtil.resizePoints(np.array(bb).reshape(2,2), img_pil_resize.size, img_pil.size)
+        bb = np.intp(bb.flatten()).tolist()
         res['detectTbl'].append({
             "score": round(score, 2),
             "bbox": bb,
