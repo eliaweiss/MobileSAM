@@ -64,7 +64,7 @@ class TblStructureDetect:
         for label, score, bbox in zip(pred_labels, pred_scores, pred_bboxes):
             class_label = self.id2label[int(label)]
             if not class_label == 'no object':
-                objects.append({'label': class_label, 'score': float(score),
+                objects.append({'label': class_label, 'score': round(float(score),2),
                                 'bbox': [float(elem) for elem in bbox]})
 
         return objects   

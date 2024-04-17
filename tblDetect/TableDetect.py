@@ -31,7 +31,7 @@ class TableDetect:
     def rescale_bboxes(self,out_bbox, size):
         img_w, img_h = size
         b = self.box_cxcywh_to_xyxy(out_bbox)
-        b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32)
+        b = (b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32)).type(torch.int)  
         return b        
         
       
