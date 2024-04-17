@@ -157,6 +157,25 @@ class AlignTable_Processor:
 
         self.center = (l+r)//2,(b+t)//2
         return self.cropBBox     
+    ################################################################
+    def getTblApproxCtr(self):
+
+        contour = self.getTblContour()
+        bRect = cv2.boundingRect(contour)
+        l,b,w,h = bRect
+        r,t = l+w,b+h   
+        intersect = LineCvUtils.calcBBIntersection((l,b,r,t), self.tblBox)
+        if intersect[0] >= 0.9:
+            approx = self.tblBox
+        else:
+            perimeter = cv2.arcLength(contour, True)
+            # Set the epsilon parameter for approxPolyDP
+            epsilon = 0.005 * perimeter
+
+            # Approximate the contour with a polygon
+            approx = cv2.approxPolyDP(contour, epsilon, True)
+            
+        return approx     
         
     ################################################################
     def find_approximate_line_from_pixels(self,points_in_line):

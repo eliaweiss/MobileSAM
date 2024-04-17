@@ -23,7 +23,7 @@ class FlaskUtil:
     ################################
     def base64_to_pil(base64_string):
         img = FlaskUtil.base64_to_cv2(base64_string)
-        # cv2.imwrite("img.jpg",img)
+        cv2.imwrite("img.jpg",img)
         img_pil = Image.fromarray(img)
         return img_pil     
      

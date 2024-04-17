@@ -23,6 +23,9 @@ import boto3
 
 import sys
 
+from flaskUtil.FlaskUtil import FlaskUtil
+from tblDetect.AlignTable_Processor import AlignTable_Processor
+from tblDetect.MobileSamBoxes import MobileSamBoxes
 from tblDetect.TableDetect import TableDetect
 
 
@@ -48,6 +51,10 @@ app = Flask(__name__)
 
 CORS(app)
 
+# global
+sam = MobileSamBoxes()
+tblDec = TableDetect()
+
 @app.route('/')
 def home():
     return "Hello, World!"
@@ -58,23 +65,40 @@ def detectTbl():
     # Assuming you're receiving JSON data
     request_data = request.json
     
+    extractCtr = request_data.get('extractCtr') 
+    
     # Accessing the value of the 'tst' key in the JSON data
     base64_string = request_data.get('image')
-    img_pil = base64_to_pil(base64_string)
+    img_pil = FlaskUtil.base64_to_pil(base64_string)
     origSize = img_pil.size
+    img_pil_resize = img_pil.copy()
     # Resize the image
-    img_pil.thumbnail((1000, 1000)) 
-    print("rescale",img_pil.size, "origSize",origSize)   
-    tblDec = TableDetect()
-    probas, boxes = tblDec.detectTables(img_pil, origSize=origSize)  
+    img_pil_resize.thumbnail((1000, 1000)) 
+    print("rescale",img_pil_resize.size, "origSize",origSize)   
+    probas, boxes = tblDec.detectTables(img_pil_resize, origSize=origSize)  
     res = {
         "detectTbl": [],
     }
-    for score,bb in list(zip(probas, boxes)):
+    
+    if extractCtr and len(boxes):
+        # find table mask
+        ctrList = []
+        anns = sam.process(img_pil,boxes)
+        for ann, box, prob in zip(anns, boxes,probas):
+            alignTable_processor = AlignTable_Processor(img_pil, annotation=ann, tblBox=box)
+            ctr = alignTable_processor.getTblApproxCtr()
+            ctrList.append(np.intp(ctr).tolist())
+    else:
+        ctrList = boxes
+            
+        
+    
+    for score,bb,ctr in list(zip(probas, boxes, ctrList)):
         bb = np.intp(bb).tolist()
         res['detectTbl'].append({
             "score": round(score, 2),
-            "bbox": bb
+            "bbox": bb,
+            "ctr": ctr,
         })
     
     # Return a response if needed
