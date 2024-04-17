@@ -90,19 +90,20 @@ def detectTbl():
             ctr = alignTable_processor.getTblApproxCtr()
             ctr= ctr.squeeze()
             ctrList.append(ctr)
-            tbl_patch_pil = alignTable_processor.getAlignTable()
-            cells = tblStructDetect.detectTableStructure(tbl_patch_pil)
-            rotated_cells =  alignTable_processor.unRotateAllCell(cells)   
-            tableCells.append(rotated_cells)         
+            if extractTblStructure:
+                tbl_patch_pil = alignTable_processor.getAlignTable()
+                cells = tblStructDetect.detectTableStructure(tbl_patch_pil)
+                rotated_cells =  alignTable_processor.unRotateAllCell(cells)   
+                tableCells.append(rotated_cells)         
     else:
         ctrList = boxes
+        tableCells = np.empty((len(boxes), 0), dtype=int)
         
-    if request_data.get('extractCtr'):
                 
             
         
     
-    for score,bb,ctr in list(zip(probas, boxes, ctrList)):
+    for score,bb,ctr,cells in list(zip(probas, boxes, ctrList,tableCells)):
         ctr = FlaskUtil.resizePoints(ctr, img_pil_resize.size, img_pil.size)
         # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4)  # Green bounding box with thickness 2
         # cv2.imwrite("img_ctr.jpg",img)
@@ -114,6 +115,7 @@ def detectTbl():
             "score": round(score, 2),
             "bbox": bb,
             "ctr": ctr,
+            "cells": cells,
         })
     
     # Return a response if needed
