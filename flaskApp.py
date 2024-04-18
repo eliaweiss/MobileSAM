@@ -104,7 +104,7 @@ def detectTbl():
                 cv2.imwrite("img_cell.jpg", img)                 
                 tableCells.append(rotated_cells)         
     else:
-        ctrList = boxes
+        ctrList = FlaskUtil.boxesToCtrs(boxes)
         tableCells = np.empty((len(boxes), 0), dtype=int)
             
     res = {

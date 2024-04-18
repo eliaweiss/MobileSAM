@@ -56,3 +56,11 @@ class FlaskUtil:
             scale_y  # Scale y-coordinates
 
         return scaled_contour
+
+    def boxToCtr(box):
+        l,b,r,t = box
+        ctr = np.array([[l,b],[r,b],[r,t], [l,t]])   
+        return ctr
+    
+    def boxesToCtrs(boxes):
+        return [FlaskUtil.boxToCtr(b) for b in boxes]

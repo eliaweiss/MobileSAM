@@ -11,6 +11,8 @@ from lineVision.DocZvRoot import DocZvRoot
 from lineVision.DocumentBbZv import DocumentBBZv
 from typing import List
 
+from flaskUtil.FlaskUtil import FlaskUtil
+
 class AlignTable_Processor:
     ################################################################
     def __init__(self, img_pil, annotation=None, tblBox=None):
@@ -169,7 +171,7 @@ class AlignTable_Processor:
         r,t = l+w,b+h   
         intersect = LineCvUtils.calcBBIntersection((l,b,r,t), self.tblBox)
         if intersect[0] >= 1:
-            approx = self.tblBox
+            approx= FlaskUtil.boxToCtr(self.tblBox)
         else:
             perimeter = cv2.arcLength(contour, True)
             # Set the epsilon parameter for approxPolyDP
@@ -179,7 +181,8 @@ class AlignTable_Processor:
             approx = cv2.approxPolyDP(contour, epsilon, True)
             approx = approx.squeeze()
             
-        return approx     
+        return approx 
+
     ################################################################
     def getApproxCtr(self):
         contour = self.getMaxContour()
