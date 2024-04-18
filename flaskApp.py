@@ -100,8 +100,8 @@ def detectTbl():
                 
                 FlaskUtil.resizeRotatedCells(rotated_cells, img_pil.size, origSize)
                                         
-                applyRotatedResult(img, rotated_cells)
-                cv2.imwrite("img_cell.jpg", img)                 
+                # applyRotatedResult(img, rotated_cells)
+                # cv2.imwrite("img_cell.jpg", img)                 
                 tableCells.append(rotated_cells)         
     else:
         ctrList = FlaskUtil.boxesToCtrs(boxes)
