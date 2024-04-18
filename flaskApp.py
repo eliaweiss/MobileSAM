@@ -30,30 +30,12 @@ from tblDetect.MobileSamBoxes import MobileSamBoxes
 from tblDetect.TableDetect import TableDetect
 from tblDetect.TblStructureDetect import TblStructureDetect
 
-
-class FileRedirector:
-    def __init__(self, file_path):
-        self.file = open(file_path, 'a')
-
-    def write(self, data):
-        self.file.write(data)
-        self.file.flush()  # Automatically flush after every write
-
-    def flush(self):
-        self.file.flush()
-
-
-
-
 app = Flask(__name__)
-# if not 'UPLOAD_FOLDER' in environ:
-#     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# else:
-#     app.config['UPLOAD_FOLDER'] = environ['UPLOAD_FOLDER']
 
 CORS(app)
 
 # global
+IMAGE_SIZE =1500
 sam = MobileSamBoxes()
 tblDec = TableDetect()
 tblStructDetect = TblStructureDetect()       
@@ -79,9 +61,13 @@ def detectTbl():
     img_pil, img = FlaskUtil.base64_to_pil(base64_string)
     origSize = img_pil.size
     # Resize the image
-    img_pil.thumbnail((1000, 1000)) 
+    img_pil.thumbnail((IMAGE_SIZE, IMAGE_SIZE)) 
     print("rescale",img_pil.size, "origSize",origSize)   
     probas, boxes = tblDec.detectTables(img_pil) # , origSize=origSize
+    # tmpImg = np.array(img_pil)
+    # l,b,r,t = boxes[0]
+    # cv2.rectangle(tmpImg, (l,b),(r,t),(0,0,255),5)
+    # cv2.imwrite("tmpImg.jpg", tmpImg)
 
     
     extractTblStructure = request_data.get('extractTblStructure')
@@ -184,7 +170,7 @@ def segment():
     img_pil, img = FlaskUtil.base64_to_pil(base64_string)
     origSize = img_pil.size
     # Resize the image
-    img_pil.thumbnail((1000, 1000)) 
+    img_pil.thumbnail((IMAGE_SIZE, IMAGE_SIZE)) 
     print("rescale",img_pil.size, "origSize",origSize)   
     
     boxes = request_data.get('boxes' )
