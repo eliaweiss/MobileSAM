@@ -19,6 +19,7 @@ import io
 import time
 from os import environ
 import boto3
+import uuid
 
 
 import sys
@@ -59,15 +60,22 @@ def detectTbl():
     # Accessing the value of the 'tst' key in the JSON data
     base64_string = request_data.get('image')
     img_pil, img = FlaskUtil.base64_to_pil(base64_string)
+    
+    id = str(uuid.uuid4())
+    tmpFile = f"{id}.jpg"
+    cv2.imwrite(tmpFile, img)
+    img_pil = Image.open(tmpFile)
+    os.remove(tmpFile)
+    
     origSize = img_pil.size
     # Resize the image
     img_pil.thumbnail((IMAGE_SIZE, IMAGE_SIZE)) 
     print("rescale",img_pil.size, "origSize",origSize)   
     probas, boxes = tblDec.detectTables(img_pil) # , origSize=origSize
-    # tmpImg = np.array(img_pil)
-    # l,b,r,t = boxes[0]
-    # cv2.rectangle(tmpImg, (l,b),(r,t),(0,0,255),5)
-    # cv2.imwrite("tmpImg.jpg", tmpImg)
+    # for bb in boxes:
+    #     l,b,r,t = bb
+    #     cv2.rectangle(img, (l,b),(r,t),(0,0,255),5)
+    #     cv2.imwrite("img_tblDet.jpg", img)
 
     
     extractTblStructure = request_data.get('extractTblStructure')
@@ -75,10 +83,13 @@ def detectTbl():
         ctrList = []
         tableCells = []
         anns = sam.process(img_pil,boxes)
-        for ann, box, prob in zip(anns, boxes,probas):
+        for cc, (ann, box, prob) in enumerate(zip(anns, boxes,probas)):
             alignTable_processor = AlignTable_Processor(img_pil, annotation=ann, tblBox=box)
             ctr = alignTable_processor.getTblApproxCtr()
+            # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4) 
+            # cv2.imwrite("img_ctr.jpg",img)            
             ctrList.append(ctr)
+            boxes[cc] = alignTable_processor.getCropBBox()
             if extractTblStructure:
                 tbl_patch_pil = alignTable_processor.getAlignTable()
                 cells = tblStructDetect.detectTableStructure(tbl_patch_pil)
@@ -91,6 +102,7 @@ def detectTbl():
                 tableCells.append(rotated_cells)         
     else:
         ctrList = FlaskUtil.boxesToCtrs(boxes)
+    if not extractTblStructure:
         tableCells = np.empty((len(boxes), 0), dtype=int).tolist()
             
     res = {
