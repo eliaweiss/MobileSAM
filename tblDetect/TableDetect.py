@@ -45,7 +45,7 @@ class TableDetect:
         # propagate through the model
         outputs = self.model(img)
         probas = outputs['logits'].softmax(-1)[0, :, :-1]
-        keep = probas.max(-1).values > 0.04
+        keep = probas.max(-1).values > 0.1
         probas = probas[keep]
         probas = probas[:, 0]
         
