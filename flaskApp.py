@@ -91,7 +91,7 @@ def detectTbl():
                 tableCells.append(rotated_cells)         
     else:
         ctrList = FlaskUtil.boxesToCtrs(boxes)
-        tableCells = np.empty((len(boxes), 0), dtype=int)
+        tableCells = np.empty((len(boxes), 0), dtype=int).tolist()
             
     res = {
         "detectTbl": [],
