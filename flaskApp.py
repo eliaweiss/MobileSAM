@@ -30,13 +30,14 @@ from tblDetect.AlignTable_Processor import AlignTable_Processor
 from tblDetect.MobileSamBoxes import MobileSamBoxes
 from tblDetect.TableDetect import TableDetect
 from tblDetect.TblStructureDetect import TblStructureDetect
+from lineVision.LineCvUtils import LineCvUtils
 
 app = Flask(__name__)
 
 CORS(app)
 
 # global
-IMAGE_SIZE =1500
+IMAGE_SIZE =2000
 sam = MobileSamBoxes()
 tblDec = TableDetect()
 tblStructDetect = TblStructureDetect()       
@@ -59,17 +60,11 @@ def detectTbl():
 
     # Accessing the value of the 'tst' key in the JSON data
     base64_string = request_data.get('image')
-    img_pil, img = FlaskUtil.base64_to_pil(base64_string)
+    img = FlaskUtil.base64_to_cv2Img(base64_string)
+    origSize = Image.fromarray(img).size
+    img = LineCvUtils.resize_keep_ratio(img, IMAGE_SIZE)
+    img_pil = Image.fromarray(img)
     
-    id = str(uuid.uuid4())
-    tmpFile = f"{id}.jpg"
-    cv2.imwrite(tmpFile, img)
-    img_pil = Image.open(tmpFile)
-    os.remove(tmpFile)
-    
-    origSize = img_pil.size
-    # Resize the image
-    img_pil.thumbnail((IMAGE_SIZE, IMAGE_SIZE)) 
     print("rescale",img_pil.size, "origSize",origSize)   
     probas, boxes = tblDec.detectTables(img_pil) # , origSize=origSize
     # for bb in boxes:

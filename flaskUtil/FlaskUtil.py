@@ -18,7 +18,7 @@ class FlaskUtil:
             
         return rotated_cells
 
-    def base64_to_cv2(base64_string):
+    def base64_to_cv2Img(base64_string):
         # Decode base64 string to bytes
         image_bytes = base64.b64decode(base64_string)
 
@@ -32,7 +32,7 @@ class FlaskUtil:
 
     ################################
     def base64_to_pil(base64_string):
-        img = FlaskUtil.base64_to_cv2(base64_string)
+        img = FlaskUtil.base64_to_cv2Img(base64_string)
         # cv2.imwrite("img.jpg",img)
         img_pil = Image.fromarray(img)
         return img_pil,img

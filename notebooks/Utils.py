@@ -29,7 +29,7 @@ def applyRotatedResult(tmpImg, rotated_cells ):
         cv2.drawContours(tmpImg, [rotated_bbox], 0, color, 4)  
   
 #########################################
-def plot_results(model, pil_img, prob, boxes):
+def plot_results(pil_img, prob, boxes):
     plt.figure(figsize=(16,10))
     plt.imshow(pil_img)
     ax = plt.gca()
