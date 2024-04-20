@@ -1,8 +1,9 @@
+import numpy as np
 import torchvision.transforms as T
 import torch
 torch.set_grad_enabled(False);
 
-from transformers import AutoModelForObjectDetection
+from transformers import AutoModelForObjectDetection, TableTransformerForObjectDetection,AutoImageProcessor
 from lineVision.LineCvUtils import LineCvUtils
 
 # from transformers import TableTransformerForObjectDetection
@@ -17,8 +18,10 @@ class TableDetect:
             T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
 
-        self.model = AutoModelForObjectDetection.from_pretrained("microsoft/table-transformer-detection", revision="no_timm")        
-        # self.model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
+        # self.model = AutoModelForObjectDetection.from_pretrained("microsoft/table-transformer-detection", revision="no_timm")        
+        self.model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
+        # self.model = TableTransformerModel.from_pretrained("microsoft/table-transformer-detection")
+        self.image_processor = AutoImageProcessor.from_pretrained("microsoft/table-transformer-detection")
         self.model.eval();
 
     # for output bounding box post-processing
@@ -34,32 +37,52 @@ class TableDetect:
         b = (b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32)).type(torch.int)  
         return b        
         
-      
     
     def detectTables(self,im, origSize = None):
         if origSize is None:
             origSize = im.size
-        # mean-std normalize the input image (batch-size: 1)
-        img = self.transform(im).unsqueeze(0)
 
-        # propagate through the model
-        outputs = self.model(img)
-        probas = outputs['logits'].softmax(-1)[0, :, :-1]
-        keep = probas.max(-1).values > 0.1
-        probas = probas[keep]
-        probas = probas[:, 0]
+        inputs = self.image_processor(images=im, return_tensors="pt")
+        outputs = self.model(**inputs)
         
-        # convert boxes from [0; 1] to image scales
-        bboxes_scaled = self.rescale_bboxes(outputs['pred_boxes'][0, keep], origSize)   
-
+        target_sizes = torch.tensor([im.size[::-1]])
+        results = self.image_processor.post_process_object_detection(outputs, threshold=0.1, target_sizes=target_sizes)[
+            0
+        ]        
+        boxes = [np.intp(box).tolist() for box in results["boxes"]]
+        probas = results["scores"]
         # Apply NMS to suppress overlapping bounding boxes
-        indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
+        indices = non_max_suppression(boxes, probas, threshold=0.01)
 
         # Extract the final boxes after NMS
-        bboxes_scaled = [bboxes_scaled[i].tolist() for i in indices]                             
-        probas = [probas[i].tolist() for i in indices]
+        boxes = [boxes[i] for i in indices]                             
+        probas = [probas[i] for i in indices]        
+        return probas, boxes      
+    
+    # def detectTables(self,im, origSize = None):
+    #     if origSize is None:
+    #         origSize = im.size
+    #     # mean-std normalize the input image (batch-size: 1)
+    #     img = self.transform(im).unsqueeze(0)
+
+    #     # propagate through the model
+    #     outputs = self.model(img)
+    #     probas = outputs['logits'].softmax(-1)[0, :, :-1]
+    #     keep = probas.max(-1).values > 0.1
+    #     probas = probas[keep]
+    #     probas = probas[:, 0]
+        
+    #     # convert boxes from [0; 1] to image scales
+    #     bboxes_scaled = self.rescale_bboxes(outputs['pred_boxes'][0, keep], origSize)   
+
+    #     # Apply NMS to suppress overlapping bounding boxes
+    #     indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
+
+    #     # Extract the final boxes after NMS
+    #     bboxes_scaled = [bboxes_scaled[i].tolist() for i in indices]                             
+    #     probas = [probas[i].tolist() for i in indices]
                 
-        return probas, bboxes_scaled 
+    #     return probas, bboxes_scaled 
     
     
 def non_max_suppression(boxes, scores, threshold):
