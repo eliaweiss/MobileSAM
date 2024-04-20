@@ -15,8 +15,9 @@ from flaskUtil.FlaskUtil import FlaskUtil
 
 class AlignTable_Processor:
     ################################################################
-    def __init__(self, img_pil, annotation=None, tblBox=None):
+    def __init__(self, img_pil, annotation=None, tblBox=None,origSize = None):
         assert tblBox is not None or annotation is not None, "tblBox and annotation cannot both be none"
+        self.origSize = origSize
         self.img_pil = img_pil
         self.annotation = annotation
         self.tblBox = tblBox
@@ -32,12 +33,17 @@ class AlignTable_Processor:
         w,h = self.img_pil.size
         mask = np.zeros((h, w, 1), np.uint8)
         mask[m] = 255
+        if self.origSize is not None:
+            w,h = self.origSize
+            mask = cv2.resize(mask,(w,h), interpolation=cv2.INTER_CUBIC)
         self.mask = mask
         return mask
     
     ################################################################
     def boundToImgSize(self,x,y,x1,y1):
         w,h = self.img_pil.size
+        if self.origSize is not None:
+            w,h = self.origSize
         x = max(x,0)
         y = max(y,0)
         x1 = min(x1,w-1)
@@ -150,11 +156,13 @@ class AlignTable_Processor:
             self.cropBBox = self.tblBox 
         else:
             contour = self.getMaxContour()
+            # if self.origSize is not None:
+            #     contour = FlaskUtil.resizePoints(contour.squeeze(), self.img_pil.size, self.origSize)
             bRect = cv2.boundingRect(contour)
             l,b,w,h = bRect
             r,t = l+w,b+h   
             intersect = LineCvUtils.calcBBIntersection((l,b,r,t), self.tblBox)
-            if intersect[0] >= 0.9:
+            if intersect[0] >= 0.9 or contour is None:
                 self.cropBBox = self.tblBox
             else:
                 self.cropBBox = self.boundToImgSize(l,b,r,t)

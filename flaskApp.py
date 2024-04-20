@@ -108,8 +108,7 @@ def detectTbl():
     for score,bb,ctr,cells in list(zip(probas, boxes, ctrList,tableCells)):
         ctr = FlaskUtil.resizePoints(ctr, img_pil.size, origSize)
         ctr = np.intp(ctr).tolist()
-        bb = FlaskUtil.resizePoints(np.array(bb).reshape(2,2), img_pil.size, origSize)
-        bb = np.intp(bb.flatten()).tolist()
+        bb = FlaskUtil.resizeBox(bb, img_pil.size, origSize)
         res['detectTbl'].append({
             "score": round(score, 2),
             "bbox": bb,
@@ -120,6 +119,7 @@ def detectTbl():
     print("------ detectTbl time: (s): %s" % round(time.time() - start, 2))
     
     return json.dumps(res)
+
 
         # cv2.drawContours(img, [ctr], 0, (0, 255, 0), 4)  # Green bounding box with thickness 2
         # cv2.imwrite("img_ctr.jpg",img)

@@ -64,3 +64,9 @@ class FlaskUtil:
     
     def boxesToCtrs(boxes):
         return [FlaskUtil.boxToCtr(b) for b in boxes]
+    
+
+    def resizeBox(bb, from_WxH, to_WxH):
+        bb = FlaskUtil.resizePoints(np.array(bb).reshape(2,2), from_WxH, to_WxH)
+        bb = np.intp(bb.flatten()).tolist()
+        return bb    
