@@ -37,7 +37,7 @@ app = Flask(__name__)
 CORS(app)
 
 # global
-IMAGE_SIZE =2000
+IMAGE_SIZE =1500
 sam = MobileSamBoxes()
 tblDec = TableDetect()
 tblStructDetect = TblStructureDetect()       
