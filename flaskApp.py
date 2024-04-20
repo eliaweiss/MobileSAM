@@ -63,7 +63,8 @@ def detectTbl():
     img = FlaskUtil.base64_to_cv2Img(base64_string)
     origSize = Image.fromarray(img).size
     img = LineCvUtils.resize_keep_ratio(img, IMAGE_SIZE)
-    img_pil = Image.fromarray(img)
+    # img_pil = Image.fromarray(img)
+    img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     
     print("rescale",img_pil.size, "origSize",origSize)   
     probas, boxes = tblDec.detectTables(img_pil) # , origSize=origSize
