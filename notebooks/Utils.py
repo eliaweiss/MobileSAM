@@ -190,3 +190,10 @@ def calculate_iou(box1, box2):
     iou = intersection / union if union > 0 else 0
     
     return iou
+
+import random
+
+
+def create_random_color():
+    rgb = tuple(random.randint(0, 255) for _ in range(3))
+    return rgb
