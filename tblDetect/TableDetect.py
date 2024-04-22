@@ -36,7 +36,7 @@ class TableDetect:
         
       
     
-    def detectTables(self,im, origSize = None):
+    def detectTables(self,im, origSize = None, threshold = 0.65):
         if origSize is None:
             origSize = im.size
         # mean-std normalize the input image (batch-size: 1)
@@ -45,19 +45,19 @@ class TableDetect:
         # propagate through the model
         outputs = self.model(img)
         probas = outputs['logits'].softmax(-1)[0, :, :-1]
-        keep = probas.max(-1).values > 0.1
+        keep = probas.max(-1).values > threshold
         probas = probas[keep]
         probas = probas[:, 0]
         
         # convert boxes from [0; 1] to image scales
         bboxes_scaled = self.rescale_bboxes(outputs['pred_boxes'][0, keep], origSize)   
 
-        # Apply NMS to suppress overlapping bounding boxes
-        indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
+        # # Apply NMS to suppress overlapping bounding boxes
+        # indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
 
-        # Extract the final boxes after NMS
-        bboxes_scaled = [bboxes_scaled[i].tolist() for i in indices]                             
-        probas = [probas[i].tolist() for i in indices]
+        # # Extract the final boxes after NMS
+        # bboxes_scaled = [bboxes_scaled[i].tolist() for i in indices]                             
+        # probas = [probas[i].tolist() for i in indices]
                 
         return probas, bboxes_scaled 
     
