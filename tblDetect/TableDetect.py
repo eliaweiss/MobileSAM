@@ -52,14 +52,16 @@ class TableDetect:
         # convert boxes from [0; 1] to image scales
         bboxes_scaled = self.rescale_bboxes(outputs['pred_boxes'][0, keep], origSize)   
 
-        # Apply NMS to suppress overlapping bounding boxes
-        indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
+        return probas.tolist(), bboxes_scaled.tolist() 
 
-        # Extract the final boxes after NMS
-        bboxes_scaled = [bboxes_scaled[i].tolist() for i in indices]                             
-        probas = [probas[i].tolist() for i in indices]
+        # # Apply NMS to suppress overlapping bounding boxes
+        # indices = non_max_suppression(bboxes_scaled, probas, threshold=0.01)
+
+        # # Extract the final boxes after NMS
+        # bboxes_scaled = [bboxes_scaled[i].tolist() for i in indices]                             
+        # probas = [probas[i].tolist() for i in indices]
                 
-        return probas, bboxes_scaled 
+        # return probas, bboxes_scaled 
     
     
 def non_max_suppression(boxes, scores, threshold):
