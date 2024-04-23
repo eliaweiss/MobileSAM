@@ -12,7 +12,7 @@ tblDec = TableDetect()
 model_yolov8 = YOLO('keremberke/yolov8m-table-extraction')
 
 # set model parameters
-model_yolov8.overrides['conf'] = 0.25  # NMS confidence threshold
+model_yolov8.overrides['conf'] = 0.1  # NMS confidence threshold
 model_yolov8.overrides['iou'] = 0.45  # NMS IoU threshold
 model_yolov8.overrides['agnostic_nms'] = False  # NMS class-agnostic
 model_yolov8.overrides['max_det'] = 1000  # maximum number of detections per image
@@ -49,10 +49,13 @@ def tblDec_detr( image, threshold = 0.1):
     outputs = model_detr(**inputs)
 
     # convert outputs (bounding boxes and class logits) to COCO API
-    # let's only keep detections with score > 0.9
+    # let's only keep detections with score > threshold
     target_sizes = torch.tensor([image.size[::-1]])
     results = processor_detr.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=threshold)[0]
     return results["scores"].tolist(), np.intp(results["boxes"].tolist()).tolist()
+
+
+################################
 
 class MultiDetectors:
     
