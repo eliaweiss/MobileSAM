@@ -53,10 +53,19 @@ class ReduceBoxByIntersect:
     
     ################################################################    
     # main function    
-    def reduceBoxByIntersect(boxes):
+    def reduceBoxByIntersect(boxes, threshold= 0.4):
+        selected_indices = ReduceBoxByIntersect.reduceBoxByIntersect_indices(boxes,threshold =threshold)
+        selected_box = []
+        for i in selected_indices:
+            selected_box.append(boxes[i])  
+        return selected_box 
+
+    ################################################################    
+
+    def reduceBoxByIntersect_indices(boxes, threshold= 0.4):
         selected_indices = []
         for box in boxes:
-            intersect_boxes = ReduceBoxByIntersect.find_intersect_boxes(box, boxes)
+            intersect_boxes = ReduceBoxByIntersect.find_intersect_boxes(box, boxes,threshold =threshold)
             # print(intersect_boxes)
             # showImage_boxes(image, intersect_boxes)
             ibox = ReduceBoxByIntersect.intersecting_box(intersect_boxes)
@@ -66,8 +75,5 @@ class ReduceBoxByIntersect:
             selected_indices.append(box_i)
 
         selected_indices = list(set(selected_indices))
-        selected_box = []
-        for i in selected_indices:
-            selected_box.append(boxes[i])  
-        return selected_box      
+        return selected_indices     
         
